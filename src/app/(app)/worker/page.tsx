@@ -20,8 +20,11 @@ export default async function WorkerDashboardPage() {
 
   return (
     <div className="space-y-5">
-      <SectionCard className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div>
+      <div className="rounded-[30px] bg-slate-950 px-5 py-6 text-white sm:px-6 sm:py-7">
+        <div className="flex min-h-[12rem] flex-col justify-between gap-6">
+          <div>
+            <div className="text-[1.9rem] font-bold tracking-tight sm:text-[2.1rem]">{formatCurrency(pendingValue)}</div>
+          </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild>
               <Link href="/worker/tasks">Open task board</Link>
@@ -31,12 +34,7 @@ export default async function WorkerDashboardPage() {
             </Button>
           </div>
         </div>
-        <div className="rounded-[28px] bg-slate-950 p-5 text-white">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Pending earnings</div>
-          <div className="mt-3 text-3xl font-bold">{formatCurrency(pendingValue)}</div>
-          <div className="mt-3 text-sm text-white/70">{myTasks.length} active or completed tasks linked to you.</div>
-        </div>
-      </SectionCard>
+      </div>
 
       <div className="dashboard-grid">
         <SectionCard>

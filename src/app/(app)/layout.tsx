@@ -1,6 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { requireProfile } from "@/lib/auth";
 
+function getShellTitle(name: string | null | undefined) {
+  return name?.trim() || "CrewPay";
+}
+
 export default async function ProtectedLayout({
   children,
 }: {
@@ -9,11 +13,11 @@ export default async function ProtectedLayout({
   const { profile } = await requireProfile();
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-3 py-3 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-7xl px-3 pb-3 pt-2 sm:px-6 sm:py-3 lg:px-8">
       <AppShell
         roleView={profile.default_role_view}
-        title={profile.default_role_view === "lead" ? "Lead workspace" : "Worker workspace"}
-        eyebrow={profile.default_role_view === "lead" ? "Owner + manager controls" : "Task execution + payouts"}
+        title={getShellTitle(profile.full_name)}
+        eyebrow={profile.default_role_view === "lead" ? "Lead view" : "Worker view"}
         unreadCount={0}
       >
         {children}

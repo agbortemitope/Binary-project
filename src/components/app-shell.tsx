@@ -8,6 +8,20 @@ import { Bell } from "lucide-react";
 import { LEAD_NAV, WORKER_NAV, type RoleView } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
+function getInitials(name: string) {
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (words.length === 0) {
+    return "CP";
+  }
+
+  return words.map((word) => word.charAt(0).toUpperCase()).join("");
+}
+
 function isActivePath(currentPath: string, href: string) {
   if (currentPath === href) {
     return true;
@@ -37,6 +51,7 @@ export function AppShell({
   const router = useRouter();
   const navItems = roleView === "lead" ? LEAD_NAV : WORKER_NAV;
   const [liveUnreadCount, setLiveUnreadCount] = useState(unreadCount);
+  const initials = getInitials(title);
 
   useEffect(() => {
     navItems.forEach((item) => {
@@ -84,11 +99,11 @@ export function AppShell({
         <div className="space-y-8">
           <div className="flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center rounded-2xl border border-blue-100 bg-blue-50 text-sm font-extrabold tracking-[0.2em] text-blue-700">
-              CP
+              {initials}
             </div>
             <div>
-              <div className="text-lg font-bold text-slate-950">CrewPay</div>
-              <div className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Team Ops + Payouts</div>
+              <div className="text-lg font-bold text-slate-950">{title}</div>
+              <div className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">{eyebrow}</div>
             </div>
           </div>
           <nav className="space-y-2">
@@ -140,35 +155,41 @@ export function AppShell({
       </aside>
 
       <div className="relative min-w-0">
-        <div className="mobile-safe-top mb-3 px-1 lg:hidden">
-          <div className="rounded-[26px] border border-white/70 bg-white/86 px-4 py-3 shadow-[0_16px_40px_rgba(20,33,61,0.1)] backdrop-blur-xl">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-blue-100 bg-blue-50 text-sm font-extrabold tracking-[0.22em] text-blue-700">
-                  CP
-                </div>
+        <div className="mobile-safe-top mb-2 px-1 lg:hidden">
+          <div
+            className={cn(
+              "flex items-center justify-between gap-3 px-2 py-1",
+              roleView === "worker" ? "bg-transparent" : "rounded-[24px] border border-white/70 bg-white/86 shadow-[0_16px_40px_rgba(20,33,61,0.08)] backdrop-blur-xl",
+            )}
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div
+                className={cn(
+                  "grid shrink-0 place-items-center rounded-2xl border border-blue-100 bg-blue-50 text-sm font-extrabold tracking-[0.22em] text-blue-700",
+                  roleView === "worker" ? "h-11 w-11" : "h-12 w-12",
+                )}
+              >
+                {initials}
+              </div>
               <div className="min-w-0">
-                  <p className="truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    {roleView === "lead" ? "Lead view" : "Worker view"}
-                  </p>
-                  <h1 className="truncate text-lg font-bold text-slate-950">{title}</h1>
-                </div>
+                <p className="truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">{eyebrow}</p>
+                <h1 className="truncate text-lg font-bold text-slate-950">{title}</h1>
               </div>
-              <div className="flex shrink-0 items-center">
-                <Link
-                  href="/notifications"
-                  prefetch
-                  className="relative inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
-                  aria-label="Notifications"
-                >
-                  <Bell className="h-5 w-5" />
-                  {liveUnreadCount > 0 ? (
-                    <span className="absolute right-1.5 top-1.5 inline-flex min-w-[1.05rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-semibold text-white">
-                      {liveUnreadCount > 9 ? "9+" : liveUnreadCount}
-                    </span>
-                  ) : null}
-                </Link>
-              </div>
+            </div>
+            <div className="flex shrink-0 items-center">
+              <Link
+                href="/notifications"
+                prefetch
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+                aria-label="Notifications"
+              >
+                <Bell className="h-4 w-4" />
+                {liveUnreadCount > 0 ? (
+                  <span className="absolute right-1 top-1 inline-flex min-w-[0.95rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[8px] font-semibold text-white">
+                    {liveUnreadCount > 9 ? "9+" : liveUnreadCount}
+                  </span>
+                ) : null}
+              </Link>
             </div>
           </div>
         </div>

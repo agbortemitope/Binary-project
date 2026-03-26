@@ -1,4 +1,4 @@
-import { Bell, BriefcaseBusiness, CreditCard, LayoutDashboard, Settings, ShieldCheck, Users2 } from "lucide-react";
+import { Bell, BriefcaseBusiness, CreditCard, LayoutDashboard, MessageSquare, Settings, ShieldCheck, Users2 } from "lucide-react";
 
 export const APP_NAME = "CrewPay";
 export const DEFAULT_CURRENCY = "NGN";
@@ -10,6 +10,7 @@ export const LEAD_NAV = [
   { href: "/lead", label: "Dashboard", icon: LayoutDashboard },
   { href: "/lead/teams", label: "Teams", icon: Users2 },
   { href: "/lead/tasks", label: "Tasks", icon: BriefcaseBusiness },
+  { href: "/lead/chat", label: "Chat", icon: MessageSquare },
   { href: "/lead/analytics", label: "Settings", icon: Settings },
 ] as const;
 
