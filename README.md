@@ -1,6 +1,6 @@
-# CrewPay V2
+# CrewPay
 
-CrewPay V2 is a mobile-first operational payments web app built for the Interswitch Hackathon. It connects team management, task assignment, proof of work, approval, wallet funding, and payout release in one product.
+CrewPay is a mobile-first operational payments web app built for the Interswitch Hackathon. It connects team management, task assignment, proof of work, approval, wallet funding, and payout release in one product.
 
 Instead of managing work in one place and money in another, CrewPay keeps the full workflow together:
 
@@ -28,7 +28,9 @@ Use these demo accounts when reviewing the app:
 | Role | Email | Password |
 | --- | --- | --- |
 | Lead / Team owner | `Johndoe@gmail.com` | `Johndoe123` |
-| Crewmate / Worker | `johnnychan@gmail.com` | `Johnny123` |
+| Crewmate / Worker | `johnnychan@gmail.com` | `Johnnychan123` |
+
+Judges can also create their own accounts if they prefer to test the full onboarding flow from scratch.
 
 ## Team Ownership
 
@@ -760,7 +762,7 @@ Below are the most important route handlers in the working product.
 The most important runtime folders are:
 
 ```text
-Crewpayv2/
+CrewPay/
 |-- README.md
 |-- crewpay_video.mp4
 |-- docs/
@@ -988,7 +990,7 @@ Natural next steps for CrewPay include:
 
 ## Final Summary
 
-CrewPay V2 is a mobile-first work-and-money operating system for teams.
+CrewPay is a mobile-first work-and-money operating system for teams.
 
 It connects:
 
