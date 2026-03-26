@@ -15,9 +15,10 @@ Instead of managing work in one place and money in another, CrewPay keeps the fu
 
 ## Attention
 
-For the best demo experience, we strongly recommend reviewing CrewPay in a mobile view.
+CrewPay works on mobile, desktop, tablet, and other screen sizes, but the best demo experience is still mobile.
 
 - Best option: open the live app on a phone
+- Other screen sizes are still okay, including desktop and tablet
 - Good alternative: use your browser's mobile device emulator
 - Reason: CrewPay is designed and optimized as a mobile-first product, so that is the best way to evaluate the UI and flow
 
