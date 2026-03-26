@@ -13,6 +13,23 @@ Instead of managing work in one place and money in another, CrewPay keeps the fu
 
 [Live Demo](https://crewpay-eta.vercel.app)
 
+## Attention
+
+For the best demo experience, we strongly recommend reviewing CrewPay in a mobile view.
+
+- Best option: open the live app on a phone
+- Good alternative: use your browser's mobile device emulator
+- Reason: CrewPay is designed and optimized as a mobile-first product, so that is the best way to evaluate the UI and flow
+
+### Demo login accounts
+
+Use these demo accounts when reviewing the app:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Lead / Team owner | `Johndoe@gmail.com` | `Johndoe123` |
+| Crewmate / Worker | `johnnychan@gmail.com` | `Johnny123` |
+
 ## Team Ownership
 
 This authorship split should be clearly recognized:
