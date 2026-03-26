@@ -39,8 +39,7 @@ export function SignInForm() {
           }
 
           toast.success("Welcome back.");
-          router.push("/dashboard");
-          router.refresh();
+          window.location.replace("/dashboard");
         } catch (caught) {
           const message = caught instanceof Error ? caught.message : "Unable to sign in.";
           setError(message);

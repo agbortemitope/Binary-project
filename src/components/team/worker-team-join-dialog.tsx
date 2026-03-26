@@ -22,7 +22,7 @@ export function WorkerTeamJoinDialog() {
   return (
     <>
       <Button size="sm" onClick={() => setOpen(true)}>
-        Join team
+        Join
       </Button>
 
       {open ? (

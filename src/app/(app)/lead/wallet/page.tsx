@@ -60,8 +60,20 @@ export default async function LeadWalletPage({
           <p className="text-sm text-slate-600">Funding enters available balance. Task creation reserves from there, and approvals move value into pending payout.</p>
         </div>
         {verificationResult ? (
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-            Latest funding verification status: <strong>{verificationResult}</strong>
+          <div
+            className={`mt-4 rounded-2xl border p-4 text-sm ${
+              verificationResult === "successful"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                : verificationResult === "failed"
+                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  : "border-slate-200 bg-slate-50 text-slate-700"
+            }`}
+          >
+            {verificationResult === "successful"
+              ? "Wallet funded successfully. The team balance has been updated."
+              : verificationResult === "failed"
+                ? "Funding was not completed. Interswitch returned a failed or cancelled result for this attempt."
+                : "Funding verification is still pending."}
           </div>
         ) : null}
         <div className="mt-4 grid gap-4 sm:grid-cols-3">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BadgeDollarSign, ClipboardList, LayoutGrid } from "lucide-react";
 
 import { requireWorkerProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
@@ -40,15 +41,33 @@ export default async function WorkerDashboardPage() {
       <div className="rounded-[28px] border border-slate-200 bg-white p-2 shadow-[0_14px_34px_rgba(15,23,42,0.04)] md:border-0 md:bg-transparent md:p-0 md:shadow-none">
         <div className="dashboard-grid gap-2 md:gap-4">
           <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
-            <p className="text-sm font-semibold text-slate-500">Assigned tasks</p>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 md:hidden">
+                <ClipboardList className="h-4 w-4" />
+              </span>
+              <p className="hidden text-sm font-semibold text-slate-500 md:block">Assigned tasks</p>
+              <span className="sr-only">Assigned tasks</span>
+            </div>
             <h3 className="mt-2 text-3xl font-bold text-slate-950">{myTasks.length}</h3>
           </div>
           <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
-            <p className="text-sm font-semibold text-slate-500">Claimable tasks</p>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 md:hidden">
+                <LayoutGrid className="h-4 w-4" />
+              </span>
+              <p className="hidden text-sm font-semibold text-slate-500 md:block">Claimable tasks</p>
+              <span className="sr-only">Claimable tasks</span>
+            </div>
             <h3 className="mt-2 text-3xl font-bold text-slate-950">{openClaimTasks.length}</h3>
           </div>
           <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
-            <p className="text-sm font-semibold text-slate-500">Paid earnings</p>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 md:hidden">
+                <BadgeDollarSign className="h-4 w-4" />
+              </span>
+              <p className="hidden text-sm font-semibold text-slate-500 md:block">Paid earnings</p>
+              <span className="sr-only">Paid earnings</span>
+            </div>
             <h3 className="mt-2 text-3xl font-bold text-slate-950">
               {formatCurrency(
                 myEarnings.filter((earning) => earning.status === "paid").reduce((sum, earning) => sum + Number(earning.amount_minor), 0),

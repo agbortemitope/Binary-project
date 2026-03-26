@@ -14,12 +14,12 @@ export default async function WorkerTeamsPage() {
   return (
     <div className="space-y-5">
       <SectionCard>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+        <div>
+          <div className="flex items-center justify-between gap-3">
             <p className="text-lg font-bold text-slate-950">Joined teams</p>
-            <p className="text-sm text-slate-600">All active teams tied to your worker account.</p>
+            <WorkerTeamJoinDialog />
           </div>
-          <WorkerTeamJoinDialog />
+          <p className="mt-2 text-sm text-slate-600">All active teams tied to your worker account.</p>
         </div>
         <div className="mt-4 space-y-4">
           {snapshot.teams.length > 0 ? (

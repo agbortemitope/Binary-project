@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       customerName: profile?.full_name ?? "CrewPay User",
       customerEmail: profile?.email ?? user.email ?? "",
       customerId: user.id,
-      redirectUrl: `${origin}/lead/wallet?verification=${data[0].id}`,
+      redirectUrl: `${origin}/api/collections/callback?verification=${data[0].id}`,
       payItemName: `${team?.name ?? "CrewPay Team"} wallet funding`,
     });
 

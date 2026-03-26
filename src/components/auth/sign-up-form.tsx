@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { NIGERIAN_BANKS } from "@/lib/constants";
@@ -15,7 +14,6 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Select } from "@/components/ui/select";
 
 export function SignUpForm() {
-  const router = useRouter();
   const [form, setForm] = useState<{
     fullName: string;
     email: string;
@@ -88,8 +86,7 @@ export function SignUpForm() {
           }
 
           toast.success("Account created successfully.");
-          router.push("/dashboard");
-          router.refresh();
+          window.location.replace("/dashboard");
         } catch (caught) {
           const message = caught instanceof Error ? caught.message : "Unable to create account.";
           setError(message);
