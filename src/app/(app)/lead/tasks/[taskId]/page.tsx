@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { requireLeadProfile } from "@/lib/auth";
 import { getTaskDetailForUser } from "@/lib/data";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 
 import { ReviewTaskActions } from "@/components/forms/review-task-actions";
@@ -23,6 +24,17 @@ export default async function LeadTaskDetailPage({
   }
 
   const latestSubmission = detail.submissions[0];
+  const admin = createSupabaseAdminClient();
+  const participantIds = [...new Set([latestSubmission?.submitted_by_user_id, detail.task.assignee_user_id].filter(Boolean))];
+  const { data: profiles } = participantIds.length
+    ? await admin.from("profiles").select("*").in("user_id", participantIds)
+    : { data: [] };
+  const profileByUserId = new Map((profiles ?? []).map((item) => [item.user_id, item]));
+  const submitter = latestSubmission ? profileByUserId.get(latestSubmission.submitted_by_user_id) ?? null : null;
+  const assignee = detail.task.assignee_user_id ? profileByUserId.get(detail.task.assignee_user_id) ?? null : null;
+  const { data: payoutMethod } = detail.task.assignee_user_id
+    ? await admin.from("payout_methods").select("*").eq("user_id", detail.task.assignee_user_id).maybeSingle()
+    : { data: null };
 
   return (
     <div className="space-y-5">
@@ -67,6 +79,30 @@ export default async function LeadTaskDetailPage({
         </div>
         {latestSubmission ? (
           <div className="mt-4 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="text-sm font-semibold text-slate-900">Submitted by</div>
+                <div className="mt-2 text-sm text-slate-600">
+                  <div className="font-semibold text-slate-950">
+                    {submitter?.full_name || submitter?.email || latestSubmission.submitted_by_user_id}
+                  </div>
+                  <div className="mt-1">{submitter?.email || "No email on file"}</div>
+                  <div className="mt-1">{submitter?.phone || "No phone on file"}</div>
+                </div>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="text-sm font-semibold text-slate-900">Payout destination</div>
+                <div className="mt-2 text-sm text-slate-600">
+                  <div className="font-semibold text-slate-950">
+                    {assignee?.full_name || assignee?.email || detail.task.assignee_user_id || "No assignee"}
+                  </div>
+                  <div className="mt-1">
+                    {payoutMethod ? `${payoutMethod.bank_name} - ${payoutMethod.account_number}` : "No payout method saved"}
+                  </div>
+                  <div className="mt-1">{payoutMethod?.account_name || "Account name unavailable"}</div>
+                </div>
+              </div>
+            </div>
             <div className="rounded-2xl bg-slate-50 p-4">
               <div className="text-sm font-semibold text-slate-900">Submission note</div>
               <div className="mt-2 text-sm leading-6 text-slate-600">{latestSubmission.note || "No note added."}</div>

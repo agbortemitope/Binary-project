@@ -1,5 +1,6 @@
 import { apiError, apiSuccess } from "@/lib/api";
 import { persistCollectionVerification } from "@/lib/collections";
+import { markDirectTeamPayoutFailure, markDirectTeamPayoutSuccess } from "@/lib/payouts";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature } from "@/lib/interswitch";
 
@@ -83,18 +84,39 @@ export async function POST(request: Request) {
         .maybeSingle();
 
       if (payout) {
+        const { data: earning } = await admin
+          .from("worker_earnings")
+          .select("id")
+          .eq("payout_id", payout.id)
+          .maybeSingle();
+
         if (status.includes("SUCCESS")) {
-          await admin.rpc("mark_payout_success", {
-            p_payout_id: payout.id,
-            p_payload: payload,
-            p_fee_minor: 0,
-          });
+          if (earning) {
+            await admin.rpc("mark_payout_success", {
+              p_payout_id: payout.id,
+              p_payload: payload,
+              p_fee_minor: 0,
+            });
+          } else {
+            await markDirectTeamPayoutSuccess({
+              payoutId: payout.id,
+              payload,
+            });
+          }
         } else if (status.includes("FAIL")) {
-          await admin.rpc("mark_payout_failed", {
-            p_payout_id: payout.id,
-            p_reason: "Provider reported a failed payout status.",
-            p_payload: payload,
-          });
+          if (earning) {
+            await admin.rpc("mark_payout_failed", {
+              p_payout_id: payout.id,
+              p_reason: "Provider reported a failed payout status.",
+              p_payload: payload,
+            });
+          } else {
+            await markDirectTeamPayoutFailure({
+              payoutId: payout.id,
+              reason: "Provider reported a failed payout status.",
+              payload,
+            });
+          }
         }
       }
     }
