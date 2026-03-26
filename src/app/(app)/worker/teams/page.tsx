@@ -3,8 +3,8 @@ import Link from "next/link";
 import { requireWorkerProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 
-import { JoinTeamForm } from "@/components/forms/join-team-form";
 import { SectionCard } from "@/components/section-card";
+import { WorkerTeamJoinDialog } from "@/components/team/worker-team-join-dialog";
 import { Badge } from "@/components/ui/badge";
 
 export default async function WorkerTeamsPage() {
@@ -12,13 +12,14 @@ export default async function WorkerTeamsPage() {
   const snapshot = await getSnapshotForUser(profile.user_id);
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
+    <div className="space-y-5">
       <SectionCard>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-lg font-bold text-slate-950">Joined teams</p>
             <p className="text-sm text-slate-600">All active teams tied to your worker account.</p>
           </div>
+          <WorkerTeamJoinDialog />
         </div>
         <div className="mt-4 space-y-4">
           {snapshot.teams.length > 0 ? (
@@ -41,16 +42,6 @@ export default async function WorkerTeamsPage() {
               You have not joined any teams yet.
             </div>
           )}
-        </div>
-      </SectionCard>
-
-      <SectionCard>
-        <div>
-          <p className="text-lg font-bold text-slate-950">Join a team</p>
-          <p className="text-sm text-slate-600">Paste the invite code or the shareable team link sent by the lead.</p>
-        </div>
-        <div className="mt-4">
-          <JoinTeamForm />
         </div>
       </SectionCard>
     </div>

@@ -52,6 +52,7 @@ export function AppShell({
   const navItems = roleView === "lead" ? LEAD_NAV : WORKER_NAV;
   const [liveUnreadCount, setLiveUnreadCount] = useState(unreadCount);
   const initials = getInitials(title);
+  const hasEyebrow = eyebrow.trim().length > 0;
 
   useEffect(() => {
     navItems.forEach((item) => {
@@ -103,7 +104,7 @@ export function AppShell({
             </div>
             <div>
               <div className="text-lg font-bold text-slate-950">{title}</div>
-              <div className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">{eyebrow}</div>
+              {hasEyebrow ? <div className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">{eyebrow}</div> : null}
             </div>
           </div>
           <nav className="space-y-2">
@@ -131,8 +132,8 @@ export function AppShell({
         </div>
 
         <div className="rounded-[28px] border border-slate-200 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{eyebrow}</p>
-          <p className="mt-2 text-lg font-bold text-slate-950">{title}</p>
+          {hasEyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{eyebrow}</p> : null}
+          <p className={cn("text-lg font-bold text-slate-950", hasEyebrow ? "mt-2" : "")}>{title}</p>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Realtime chat, task approvals, and payout controls live inside this workspace.
           </p>
@@ -172,7 +173,9 @@ export function AppShell({
                 {initials}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">{eyebrow}</p>
+                {hasEyebrow ? (
+                  <p className="truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">{eyebrow}</p>
+                ) : null}
                 <h1 className="truncate text-lg font-bold text-slate-950">{title}</h1>
               </div>
             </div>
@@ -198,8 +201,8 @@ export function AppShell({
           <div className="rounded-[28px] p-0 sm:p-2 lg:glass-card lg:rounded-[32px] lg:border lg:border-white/70 lg:p-6 lg:shadow-[0_24px_64px_rgba(20,33,61,0.12)]">
           <header className="hidden flex-col gap-4 rounded-[28px] bg-white/90 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between lg:flex">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{eyebrow}</p>
-              <h1 className="mt-2 text-3xl font-bold text-slate-950">{title}</h1>
+              {hasEyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{eyebrow}</p> : null}
+              <h1 className={cn("text-3xl font-bold text-slate-950", hasEyebrow ? "mt-2" : "")}>{title}</h1>
             </div>
             <div className="flex items-center gap-3">
               <Link
