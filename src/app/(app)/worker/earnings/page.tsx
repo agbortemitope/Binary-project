@@ -1,4 +1,4 @@
-import { requireProfile } from "@/lib/auth";
+import { requireWorkerProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -6,7 +6,7 @@ import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 
 export default async function WorkerEarningsPage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireWorkerProfile();
   const snapshot = await getSnapshotForUser(profile.user_id, { includePayouts: true });
   const earnings = snapshot.earnings.filter((earning) => earning.worker_user_id === profile.user_id);
   const payouts = snapshot.payouts.filter((payout) => payout.worker_user_id === profile.user_id);

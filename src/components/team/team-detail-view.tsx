@@ -23,6 +23,7 @@ export function TeamDetailView({
   members,
   tasks,
   teamRoom,
+  inviteLink,
 }: {
   roleView: RoleView;
   currentUserId: string;
@@ -32,6 +33,7 @@ export function TeamDetailView({
   members: TeamMember[];
   tasks: Task[];
   teamRoom: ChatRoom | null;
+  inviteLink: string;
 }) {
   const taskBasePath = roleView === "lead" ? "/lead/tasks" : "/worker/tasks";
   const teamBasePath = roleView === "lead" ? "/lead/teams" : "/worker/teams";
@@ -53,6 +55,12 @@ export function TeamDetailView({
             </div>
             <h2 className="mt-2 text-2xl font-bold text-slate-950">{team.name}</h2>
             <p className="mt-2 text-sm text-slate-600">Invite code: {team.invite_code}</p>
+            <p className="mt-2 text-sm text-slate-600">
+              Share link:{" "}
+              <a className="break-all font-medium text-blue-700 hover:text-blue-800" href={inviteLink}>
+                {inviteLink}
+              </a>
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-2">

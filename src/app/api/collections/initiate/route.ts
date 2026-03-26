@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { apiError, apiSuccess } from "@/lib/api";
+import { assertAccountRole } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildCheckoutPayload } from "@/lib/interswitch";
@@ -22,6 +23,12 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return apiError("Authentication required.", 401);
+    }
+
+    try {
+      await assertAccountRole(user.id, "lead");
+    } catch (caught) {
+      return apiError(caught instanceof Error ? caught.message : "Lead account required.", 403);
     }
 
     const { data, error } = await supabase.rpc("create_collection", {

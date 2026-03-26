@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ export default async function LeadWalletPage({
 }: {
   searchParams: Promise<{ verification?: string }>;
 }) {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const snapshot = await getSnapshotForUser(profile.user_id);
   const leadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);
   const teams = snapshot.teams.filter((team) => leadTeamIds.includes(team.id));

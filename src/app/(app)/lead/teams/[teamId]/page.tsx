@@ -1,5 +1,7 @@
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getTeamDetailForUser } from "@/lib/data";
+import { createTeamInviteLink } from "@/lib/team-invites";
+import { env } from "@/lib/env";
 
 import { TeamDetailView } from "@/components/team/team-detail-view";
 import { SectionCard } from "@/components/section-card";
@@ -9,7 +11,7 @@ export default async function LeadTeamDetailPage({
 }: {
   params: Promise<{ teamId: string }>;
 }) {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const { teamId } = await params;
   const detail = await getTeamDetailForUser(profile.user_id, teamId);
 
@@ -27,6 +29,7 @@ export default async function LeadTeamDetailPage({
       members={detail.members}
       tasks={detail.tasks}
       teamRoom={detail.teamRoom}
+      inviteLink={createTeamInviteLink(env.appUrl, detail.team.invite_code)}
     />
   );
 }

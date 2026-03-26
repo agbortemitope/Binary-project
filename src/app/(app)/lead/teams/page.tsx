@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 
 export default async function LeadTeamsPage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const snapshot = await getSnapshotForUser(profile.user_id);
   const leadMemberships = snapshot.memberships.filter((membership) => membership.role !== "member");
   const leadTeamIds = leadMemberships.map((membership) => membership.team_id);

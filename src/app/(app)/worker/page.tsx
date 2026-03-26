@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { requireProfile } from "@/lib/auth";
+import { requireWorkerProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export default async function WorkerDashboardPage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireWorkerProfile();
   const snapshot = await getSnapshotForUser(profile.user_id);
   const myTasks = snapshot.tasks.filter((task) => task.assignee_user_id === profile.user_id || task.claimed_by_user_id === profile.user_id);
   const openClaimTasks = snapshot.tasks.filter((task) => task.status === "open");

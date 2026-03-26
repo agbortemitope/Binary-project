@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { apiError, apiSuccess } from "@/lib/api";
+import { assertAccountRole } from "@/lib/auth";
 import { createZeroRewardTask } from "@/lib/task-actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -26,6 +27,12 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return apiError("Authentication required.", 401);
+    }
+
+    try {
+      await assertAccountRole(user.id, "lead");
+    } catch (caught) {
+      return apiError(caught instanceof Error ? caught.message : "Lead account required.", 403);
     }
 
     if (body.rewardMinor === 0) {

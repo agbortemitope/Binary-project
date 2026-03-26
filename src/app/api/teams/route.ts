@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { apiError, apiSuccess } from "@/lib/api";
+import { assertAccountRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const schema = z.object({
@@ -16,6 +17,20 @@ export async function POST(request: NextRequest) {
   try {
     const body = schema.parse(await request.json());
     const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return apiError("Authentication required.", 401);
+    }
+
+    try {
+      await assertAccountRole(user.id, "lead");
+    } catch (caught) {
+      return apiError(caught instanceof Error ? caught.message : "Lead account required.", 403);
+    }
+
     const { data, error } = await supabase.rpc("create_team", {
       p_name: body.name,
       p_payout_mode: body.payoutMode,

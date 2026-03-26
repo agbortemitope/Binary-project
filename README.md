@@ -28,8 +28,8 @@ Use these demo accounts when reviewing the app:
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Lead / Team owner | `Johndoe@gmail.com` | `Johndoe123` |
-| Crewmate / Worker | `johnnychan@gmail.com` | `Johnnychan123` |
+| Lead / Team owner | `johnnychan@gmail.com` | `Johnnychan123` |
+| Crewmate / Worker | `Johndoe@gmail.com` | `Johndoe123` |
 
 Judges can also create their own accounts if they prefer to test the full onboarding flow from scratch.
 

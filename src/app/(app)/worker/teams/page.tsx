@@ -1,15 +1,14 @@
 import Link from "next/link";
 
-import { requireProfile } from "@/lib/auth";
+import { requireWorkerProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 
 import { JoinTeamForm } from "@/components/forms/join-team-form";
-import { RoleSwitcher } from "@/components/forms/role-switcher";
 import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 
 export default async function WorkerTeamsPage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireWorkerProfile();
   const snapshot = await getSnapshotForUser(profile.user_id);
 
   return (
@@ -18,9 +17,8 @@ export default async function WorkerTeamsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-lg font-bold text-slate-950">Joined teams</p>
-            <p className="text-sm text-slate-600">All active teams tied to your account.</p>
+            <p className="text-sm text-slate-600">All active teams tied to your worker account.</p>
           </div>
-          <RoleSwitcher currentRole={profile.default_role_view} />
         </div>
         <div className="mt-4 space-y-4">
           {snapshot.teams.length > 0 ? (
@@ -49,7 +47,7 @@ export default async function WorkerTeamsPage() {
       <SectionCard>
         <div>
           <p className="text-lg font-bold text-slate-950">Join a team</p>
-          <p className="text-sm text-slate-600">Use the invite code shared by the team owner or manager.</p>
+          <p className="text-sm text-slate-600">Paste the invite code or the shareable team link sent by the lead.</p>
         </div>
         <div className="mt-4">
           <JoinTeamForm />

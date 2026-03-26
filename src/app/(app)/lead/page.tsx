@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default async function LeadDashboardPage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const snapshot = await getSnapshotForUser(profile.user_id);
 
   const leadMemberships = snapshot.memberships.filter((membership) => membership.role !== "member");

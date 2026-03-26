@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { apiError, apiSuccess } from "@/lib/api";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getProfileRecord } from "@/lib/auth";
 
 const schema = z.object({
   role: z.enum(["lead", "worker"]),
@@ -21,16 +22,17 @@ export async function POST(request: NextRequest) {
       return apiError("Authentication required.", 401);
     }
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({ default_role_view: body.role })
-      .eq("user_id", user.id);
+    const profile = await getProfileRecord(user.id);
 
-    if (error) {
-      return apiError(error.message, 400);
+    if (!profile) {
+      return apiError("Profile not found.", 404);
     }
 
-    return apiSuccess({ role: body.role });
+    if (body.role !== profile.default_role_view) {
+      return apiError("Your account type is fixed after signup. Use a separate account for the other workspace.", 403);
+    }
+
+    return apiSuccess({ role: profile.default_role_view });
   } catch (caught) {
     if (caught instanceof z.ZodError) {
       return apiError("Invalid role selection.", 400);

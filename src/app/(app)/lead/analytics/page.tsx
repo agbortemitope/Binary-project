@@ -1,11 +1,11 @@
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
 import { SectionCard } from "@/components/section-card";
 
 export default async function LeadAnalyticsPage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const snapshot = await getSnapshotForUser(profile.user_id, { includePayouts: true });
   const leadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);
   const payouts = snapshot.payouts.filter((item) => leadTeamIds.includes(item.team_id));

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getTaskDetailForUser } from "@/lib/data";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ export default async function LeadTaskDetailPage({
 }: {
   params: Promise<{ taskId: string }>;
 }) {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const { taskId } = await params;
   const detail = await getTaskDetailForUser(profile.user_id, taskId);
 

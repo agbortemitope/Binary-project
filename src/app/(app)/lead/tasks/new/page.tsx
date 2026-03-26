@@ -1,5 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 
 import { CreateTaskForm } from "@/components/forms/create-task-form";
@@ -10,7 +10,7 @@ export default async function CreateTaskPage({
 }: {
   searchParams: Promise<{ teamId?: string }>;
 }) {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const { teamId } = await searchParams;
   const snapshot = await getSnapshotForUser(profile.user_id);
   const leadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);

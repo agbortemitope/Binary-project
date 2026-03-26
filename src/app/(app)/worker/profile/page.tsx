@@ -1,12 +1,11 @@
-import { requireProfile } from "@/lib/auth";
+import { requireWorkerProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 
-import { RoleSwitcher } from "@/components/forms/role-switcher";
 import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 
 export default async function WorkerProfilePage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireWorkerProfile();
   const snapshot = await getSnapshotForUser(profile.user_id, { includePayoutMethod: true });
 
   return (
@@ -15,9 +14,8 @@ export default async function WorkerProfilePage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-lg font-bold text-slate-950">Profile</p>
-            <p className="text-sm text-slate-600">Your account can switch between worker and lead views without changing credentials.</p>
+            <p className="text-sm text-slate-600">This account is configured for worker access. Use a separate lead account to create teams or tasks.</p>
           </div>
-          <RoleSwitcher currentRole={profile.default_role_view} />
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl bg-slate-50 p-4">

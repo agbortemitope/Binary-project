@@ -208,7 +208,7 @@ export function SignUpForm() {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700" htmlFor="default-role">
-              Default landing view
+              Account type
             </label>
             <Select
               id="default-role"
@@ -218,6 +218,7 @@ export function SignUpForm() {
               <option value="worker">Worker</option>
               <option value="lead">Team owner</option>
             </Select>
+            <p className="text-xs text-slate-500">Choose carefully. Worker and lead actions now require separate accounts and cannot be switched later.</p>
           </div>
         </div>
       </div>

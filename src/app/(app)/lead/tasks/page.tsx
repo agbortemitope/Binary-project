@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { requireProfile } from "@/lib/auth";
+import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default async function LeadTasksPage() {
-  const { profile } = await requireProfile();
+  const { profile } = await requireLeadProfile();
   const snapshot = await getSnapshotForUser(profile.user_id);
   const leadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);
   const tasks = snapshot.tasks.filter((task) => leadTeamIds.includes(task.team_id));

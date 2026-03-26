@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { requireProfile } from "@/lib/auth";
+import { requireWorkerProfile } from "@/lib/auth";
 import { getTaskDetailForUser } from "@/lib/data";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ export default async function WorkerTaskDetailPage({
 }: {
   params: Promise<{ taskId: string }>;
 }) {
-  const { profile } = await requireProfile();
+  const { profile } = await requireWorkerProfile();
   const { taskId } = await params;
   const detail = await getTaskDetailForUser(profile.user_id, taskId);
 
