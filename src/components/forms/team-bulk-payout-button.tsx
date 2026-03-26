@@ -44,7 +44,7 @@ export function TeamBulkPayoutButton({
         router.refresh();
       }}
     >
-      {running ? "Paying..." : "Pay everybody"}
+      {running ? "Paying..." : "Payout"}
     </Button>
   );
 }
