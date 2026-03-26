@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { apiError, apiSuccess } from "@/lib/api";
 import { assertAccountRole } from "@/lib/auth";
-import { createZeroRewardTask } from "@/lib/task-actions";
+import { createManagedTask } from "@/lib/task-actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const schema = z.object({
@@ -35,35 +35,18 @@ export async function POST(request: NextRequest) {
       return apiError(caught instanceof Error ? caught.message : "Lead account required.", 403);
     }
 
-    if (body.rewardMinor === 0) {
-      const taskId = await createZeroRewardTask({
-        actorUserId: user.id,
-        teamId: body.teamId,
-        title: body.title,
-        description: body.description,
-        assignmentMode: body.assignmentMode,
-        deadlineAt: body.deadlineAt,
-        assigneeUserId: body.assignmentMode === "assigned" ? body.assigneeUserId : null,
-      });
-
-      return apiSuccess({ taskId }, 201);
-    }
-
-    const { data, error } = await supabase.rpc("create_task", {
-      p_team_id: body.teamId,
-      p_title: body.title,
-      p_description: body.description,
-      p_assignment_mode: body.assignmentMode,
-      p_reward_minor: body.rewardMinor,
-      p_deadline_at: body.deadlineAt,
-      p_assignee_user_id: body.assignmentMode === "assigned" ? body.assigneeUserId : null,
+    const taskId = await createManagedTask({
+      actorUserId: user.id,
+      teamId: body.teamId,
+      title: body.title,
+      description: body.description,
+      assignmentMode: body.assignmentMode,
+      rewardMinor: body.rewardMinor,
+      deadlineAt: body.deadlineAt,
+      assigneeUserId: body.assignmentMode === "assigned" ? body.assigneeUserId : null,
     });
 
-    if (error) {
-      return apiError(error.message, 400);
-    }
-
-    return apiSuccess({ taskId: data }, 201);
+    return apiSuccess({ taskId }, 201);
   } catch (caught) {
     if (caught instanceof z.ZodError) {
       return apiError("Please complete the task form.", 400, caught.flatten());

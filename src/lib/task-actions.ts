@@ -3,12 +3,13 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { AssignmentMode } from "@/lib/types";
 
-type CreateZeroRewardTaskInput = {
+type CreateManagedTaskInput = {
   actorUserId: string;
   teamId: string;
   title: string;
   description: string;
   assignmentMode: AssignmentMode;
+  rewardMinor: number;
   deadlineAt: string | null;
   assigneeUserId: string | null;
 };
@@ -44,13 +45,17 @@ async function insertNotification(input: {
   }
 }
 
-export async function createZeroRewardTask(input: CreateZeroRewardTaskInput) {
+export async function createManagedTask(input: CreateManagedTaskInput) {
   const admin = createSupabaseAdminClient();
   const title = input.title.trim();
   const description = input.description.trim();
 
   if (!title || !description) {
     throw new Error("Task title and description are required.");
+  }
+
+  if (input.rewardMinor < 0) {
+    throw new Error("Task reward cannot be negative.");
   }
 
   const { data: membership, error: membershipError } = await admin
@@ -91,6 +96,46 @@ export async function createZeroRewardTask(input: CreateZeroRewardTaskInput) {
     }
   }
 
+  let reservedWalletState: { available: number; reserved: number } | null = null;
+
+  if (input.rewardMinor > 0) {
+    const { data: wallet, error: walletLookupError } = await admin
+      .from("team_wallets")
+      .select("available_balance_minor, reserved_balance_minor")
+      .eq("team_id", input.teamId)
+      .maybeSingle();
+
+    if (walletLookupError) {
+      throw new Error(walletLookupError.message);
+    }
+
+    if (!wallet) {
+      throw new Error("Team wallet not found.");
+    }
+
+    if (Number(wallet.available_balance_minor) < input.rewardMinor) {
+      throw new Error("Insufficient wallet balance.");
+    }
+
+    reservedWalletState = {
+      available: Number(wallet.available_balance_minor),
+      reserved: Number(wallet.reserved_balance_minor),
+    };
+
+    const { error: walletUpdateError } = await admin
+      .from("team_wallets")
+      .update({
+        available_balance_minor: reservedWalletState.available - input.rewardMinor,
+        reserved_balance_minor: reservedWalletState.reserved + input.rewardMinor,
+      })
+      .eq("team_id", input.teamId);
+
+    if (walletUpdateError) {
+      throw new Error(walletUpdateError.message);
+    }
+
+  }
+
   const { data: task, error: taskError } = await admin
     .from("tasks")
     .insert({
@@ -99,7 +144,7 @@ export async function createZeroRewardTask(input: CreateZeroRewardTaskInput) {
       assignment_mode: input.assignmentMode,
       title,
       description,
-      reward_minor: 0,
+      reward_minor: input.rewardMinor,
       deadline_at: input.deadlineAt,
       status: input.assignmentMode === "assigned" ? "assigned" : "open",
       assignee_user_id: input.assignmentMode === "assigned" ? input.assigneeUserId : null,
@@ -108,7 +153,33 @@ export async function createZeroRewardTask(input: CreateZeroRewardTaskInput) {
     .single();
 
   if (taskError || !task) {
+    if (reservedWalletState) {
+      await admin
+        .from("team_wallets")
+        .update({
+          available_balance_minor: reservedWalletState.available,
+          reserved_balance_minor: reservedWalletState.reserved,
+        })
+        .eq("team_id", input.teamId);
+    }
     throw new Error(taskError?.message ?? "Unable to create task.");
+  }
+
+  if (reservedWalletState) {
+    const { error: ledgerError } = await admin.from("wallet_ledger_entries").insert({
+      team_id: input.teamId,
+      type: "task_reserve",
+      amount_minor: -input.rewardMinor,
+      task_id: task.id,
+      created_by_user_id: input.actorUserId,
+      metadata: {
+        assignment_mode: input.assignmentMode,
+      },
+    });
+
+    if (ledgerError) {
+      throw new Error(ledgerError.message);
+    }
   }
 
   const { data: room, error: roomError } = await admin
@@ -150,11 +221,14 @@ export async function createZeroRewardTask(input: CreateZeroRewardTaskInput) {
       taskId: task.id,
       type: "task_assigned",
       title: "Task assigned",
-      body: "A new task was assigned to you. This task carries no payout value yet.",
+      body:
+        input.rewardMinor > 0
+          ? "A new funded task was assigned to you."
+          : "A new task was assigned to you. This task carries no payout value yet.",
       metadata: {
         team_id: input.teamId,
         task_id: task.id,
-        reward_minor: 0,
+        reward_minor: input.rewardMinor,
       },
     });
   }

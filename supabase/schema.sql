@@ -626,7 +626,7 @@ begin
     trim(p_description),
     p_reward_minor,
     p_deadline_at,
-    case when p_assignment_mode = 'assigned' then 'assigned' else 'open' end,
+    (case when p_assignment_mode = 'assigned' then 'assigned' else 'open' end)::public.task_status,
     p_assignee_user_id
   )
   returning id into v_task_id;

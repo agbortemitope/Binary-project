@@ -134,11 +134,7 @@ export default async function LeadDashboardPage() {
           })}
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-[22px] border border-slate-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Teams</p>
-            <div className="mt-2 text-2xl font-bold text-slate-950">{leadTeams.length}</div>
-          </div>
+        <div className="grid grid-cols-2 gap-3">
           <div className="rounded-[22px] border border-slate-200 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tasks</p>
             <div className="mt-2 text-2xl font-bold text-slate-950">{activeTasks}</div>
