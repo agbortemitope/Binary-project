@@ -2,6 +2,7 @@ import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
+import { SignOutButton } from "@/components/sign-out-button";
 import { SectionCard } from "@/components/section-card";
 
 export default async function LeadAnalyticsPage() {
@@ -19,6 +20,16 @@ export default async function LeadAnalyticsPage() {
 
   return (
     <div className="space-y-5">
+      <SectionCard>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-lg font-bold text-slate-950">Settings</p>
+            <p className="text-sm text-slate-600">Review your workspace performance here and sign out when you are done.</p>
+          </div>
+          <SignOutButton variant="secondary" size="md" />
+        </div>
+      </SectionCard>
+
       <div className="dashboard-grid">
         <SectionCard>
           <p className="text-sm font-semibold text-slate-500">Total tasks</p>

@@ -1,6 +1,7 @@
 import { requireWorkerProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
 
+import { SignOutButton } from "@/components/sign-out-button";
 import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 
@@ -64,6 +65,16 @@ export default async function WorkerProfilePage() {
             No payout method stored yet.
           </div>
         )}
+      </SectionCard>
+
+      <SectionCard className="xl:col-span-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-lg font-bold text-slate-950">Account actions</p>
+            <p className="text-sm text-slate-600">Sign out from your worker account here.</p>
+          </div>
+          <SignOutButton variant="secondary" size="md" />
+        </div>
       </SectionCard>
     </div>
   );

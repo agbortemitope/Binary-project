@@ -26,17 +26,15 @@ export default async function LeadDashboardPage() {
     <div className="space-y-5">
       <SectionCard className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Lead dashboard</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">Own the flow from funding to approval.</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Create teams, reserve task rewards, review submissions, and release payouts from one workspace.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button asChild>
               <Link href="/lead/tasks/new">Create task</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link href="/lead/teams">Create or manage teams</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/lead/wallet">Fund wallet</Link>
             </Button>
           </div>
         </div>

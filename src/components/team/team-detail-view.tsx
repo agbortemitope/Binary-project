@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ShareInviteButton } from "@/components/team/share-invite-button";
 import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,15 +56,10 @@ export function TeamDetailView({
             </div>
             <h2 className="mt-2 text-2xl font-bold text-slate-950">{team.name}</h2>
             <p className="mt-2 text-sm text-slate-600">Invite code: {team.invite_code}</p>
-            <p className="mt-2 text-sm text-slate-600">
-              Share link:{" "}
-              <a className="break-all font-medium text-blue-700 hover:text-blue-800" href={inviteLink}>
-                {inviteLink}
-              </a>
-            </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <ShareInviteButton inviteLink={inviteLink} />
             {teamRoom ? (
               <Button asChild variant="secondary" size="sm">
                 <Link href={`/chat/${teamRoom.id}`}>Open team chat</Link>

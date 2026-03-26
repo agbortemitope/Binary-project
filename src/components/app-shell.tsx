@@ -5,8 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 
-import { SignOutButton } from "@/components/sign-out-button";
-import { Badge } from "@/components/ui/badge";
 import { LEAD_NAV, WORKER_NAV, type RoleView } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -123,12 +121,20 @@ export function AppShell({
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Realtime chat, task approvals, and payout controls live inside this workspace.
           </p>
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="mt-4 flex justify-end">
+            <Link
+              href="/notifications"
+              prefetch
+              className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+              aria-label="Notifications"
+            >
               <Bell className="h-4 w-4" />
-              {liveUnreadCount} unread
-            </div>
-            <SignOutButton />
+              {liveUnreadCount > 0 ? (
+                <span className="absolute right-2 top-2 inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-semibold text-white">
+                  {liveUnreadCount > 9 ? "9+" : liveUnreadCount}
+                </span>
+              ) : null}
+            </Link>
           </div>
         </div>
       </aside>
@@ -141,14 +147,14 @@ export function AppShell({
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-blue-100 bg-blue-50 text-sm font-extrabold tracking-[0.22em] text-blue-700">
                   CP
                 </div>
-                <div className="min-w-0">
+              <div className="min-w-0">
                   <p className="truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                     {roleView === "lead" ? "Lead view" : "Worker view"}
                   </p>
                   <h1 className="truncate text-lg font-bold text-slate-950">{title}</h1>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center">
                 <Link
                   href="/notifications"
                   prefetch
@@ -157,10 +163,11 @@ export function AppShell({
                 >
                   <Bell className="h-5 w-5" />
                   {liveUnreadCount > 0 ? (
-                    <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-rose-500" />
+                    <span className="absolute right-1.5 top-1.5 inline-flex min-w-[1.05rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-semibold text-white">
+                      {liveUnreadCount > 9 ? "9+" : liveUnreadCount}
+                    </span>
                   ) : null}
                 </Link>
-                <SignOutButton className="h-12 rounded-2xl px-3 text-sm" variant="ghost" />
               </div>
             </div>
           </div>
@@ -177,13 +184,16 @@ export function AppShell({
               <Link
                 href="/notifications"
                 prefetch
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
+                aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
-                Notifications
-                {liveUnreadCount > 0 ? <Badge tone="danger">{liveUnreadCount}</Badge> : null}
+                {liveUnreadCount > 0 ? (
+                  <span className="absolute right-1.5 top-1.5 inline-flex min-w-[1.05rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-semibold text-white">
+                    {liveUnreadCount > 9 ? "9+" : liveUnreadCount}
+                  </span>
+                ) : null}
               </Link>
-              <SignOutButton />
             </div>
           </header>
 

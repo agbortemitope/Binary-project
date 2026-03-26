@@ -22,12 +22,7 @@ export default async function WorkerDashboardPage() {
     <div className="space-y-5">
       <SectionCard className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Worker dashboard</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">See what is assigned, what is claimable, and what is getting paid.</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            CrewPay keeps your active tasks, pending earnings, and paid history in one place.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button asChild>
               <Link href="/worker/tasks">Open task board</Link>
             </Button>
