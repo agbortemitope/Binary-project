@@ -29,7 +29,7 @@ export default async function WorkerDashboardPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild>
-              <Link href="/worker/tasks">Open board</Link>
+              <Link href="/worker/tasks">Tasks</Link>
             </Button>
             <Button asChild>
               <Link href="/worker/teams">Join team</Link>
@@ -42,31 +42,28 @@ export default async function WorkerDashboardPage() {
         <div className="dashboard-grid gap-2 md:gap-4">
           <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 md:hidden">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
                 <ClipboardList className="h-4 w-4" />
               </span>
-              <p className="hidden text-sm font-semibold text-slate-500 md:block">Assigned tasks</p>
-              <span className="sr-only">Assigned tasks</span>
+              <p className="text-sm font-semibold text-slate-500">Assigned tasks</p>
             </div>
             <h3 className="mt-2 text-3xl font-bold text-slate-950">{myTasks.length}</h3>
           </div>
           <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 md:hidden">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
                 <LayoutGrid className="h-4 w-4" />
               </span>
-              <p className="hidden text-sm font-semibold text-slate-500 md:block">Claimable tasks</p>
-              <span className="sr-only">Claimable tasks</span>
+              <p className="text-sm font-semibold text-slate-500">Claimable tasks</p>
             </div>
             <h3 className="mt-2 text-3xl font-bold text-slate-950">{openClaimTasks.length}</h3>
           </div>
           <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 md:hidden">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
                 <BadgeDollarSign className="h-4 w-4" />
               </span>
-              <p className="hidden text-sm font-semibold text-slate-500 md:block">Paid earnings</p>
-              <span className="sr-only">Paid earnings</span>
+              <p className="text-sm font-semibold text-slate-500">Paid earnings</p>
             </div>
             <h3 className="mt-2 text-3xl font-bold text-slate-950">
               {formatCurrency(

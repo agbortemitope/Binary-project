@@ -3,10 +3,8 @@ import { cn } from "@/lib/utils";
 export function SectionCard({
   children,
   className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+  ...props
+}: React.HTMLAttributes<HTMLElement>) {
   return (
     <section
       className={cn(
@@ -14,6 +12,7 @@ export function SectionCard({
         "md:rounded-[28px] md:border md:border-slate-200/80 md:bg-white md:p-5 md:shadow-sm",
         className,
       )}
+      {...props}
     >
       {children}
     </section>

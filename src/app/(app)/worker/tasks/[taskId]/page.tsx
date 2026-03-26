@@ -8,6 +8,7 @@ import { ClaimTaskButton } from "@/components/forms/claim-task-button";
 import { SubmitTaskForm } from "@/components/forms/submit-task-form";
 import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 
 export default async function WorkerTaskDetailPage({
@@ -28,6 +29,8 @@ export default async function WorkerTaskDetailPage({
 
   return (
     <div className="space-y-5">
+      <BackButton fallbackHref="/worker/tasks" />
+
       <SectionCard>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -82,7 +85,7 @@ export default async function WorkerTaskDetailPage({
       ) : null}
 
       {canSubmit ? (
-        <SectionCard>
+        <SectionCard id="submit-work" className="scroll-mt-24">
           <div>
             <p className="text-lg font-bold text-slate-950">Submit your work</p>
             <p className="text-sm text-slate-600">Add notes and proof so the owner or manager can review the task.</p>

@@ -14,6 +14,14 @@ export default async function WorkerTasksPage() {
   const mine = snapshot.tasks.filter((task) => task.assignee_user_id === profile.user_id || task.claimed_by_user_id === profile.user_id);
   const tasks = [...mine, ...claimable.filter((task) => !mine.some((myTask) => myTask.id === task.id))];
 
+  function getTaskHref(task: (typeof tasks)[number]) {
+    if (task.status === "assigned" && task.assignee_user_id === profile.user_id) {
+      return `/worker/tasks/${task.id}#submit-work`;
+    }
+
+    return `/worker/tasks/${task.id}`;
+  }
+
   return (
     <SectionCard>
       <div>
@@ -23,7 +31,11 @@ export default async function WorkerTasksPage() {
       <div className="mt-4 space-y-3">
         {tasks.length > 0 ? (
           tasks.map((task) => (
-            <Link key={task.id} href={`/worker/tasks/${task.id}`} className="flex flex-col gap-3 rounded-[24px] border border-slate-200 p-4 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between">
+            <Link
+              key={task.id}
+              href={getTaskHref(task)}
+              className="flex flex-col gap-3 rounded-[24px] border border-slate-200 p-4 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div>
                 <div className="text-lg font-semibold text-slate-950">{task.title}</div>
                 <div className="mt-1 text-sm text-slate-500">{formatCurrency(Number(task.reward_minor))}</div>

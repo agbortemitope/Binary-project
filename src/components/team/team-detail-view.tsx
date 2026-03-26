@@ -44,6 +44,14 @@ export function TeamDetailView({
     (task) => task.assignee_user_id === currentUserId || task.claimed_by_user_id === currentUserId || task.created_by_user_id === currentUserId,
   );
 
+  function getTaskHref(task: Task) {
+    if (roleView === "worker" && task.status === "assigned" && task.assignee_user_id === currentUserId) {
+      return `${taskBasePath}/${task.id}#submit-work`;
+    }
+
+    return `${taskBasePath}/${task.id}`;
+  }
+
   return (
     <div className="space-y-5">
       <SectionCard>
@@ -71,7 +79,7 @@ export function TeamDetailView({
               </Button>
             ) : (
               <Button asChild size="sm">
-                <Link href="/worker/tasks">Open task board</Link>
+                <Link href="/worker/tasks">Tasks</Link>
               </Button>
             )}
           </div>
@@ -166,7 +174,7 @@ export function TeamDetailView({
               tasks.map((task) => (
                 <Link
                   key={task.id}
-                  href={`${taskBasePath}/${task.id}`}
+                  href={getTaskHref(task)}
                   className="flex items-center justify-between gap-3 rounded-[22px] border border-slate-200 p-4 transition hover:bg-slate-50"
                 >
                   <div className="min-w-0">
