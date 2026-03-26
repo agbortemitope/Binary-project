@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Share2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 
@@ -13,20 +14,33 @@ export function ShareInviteButton({
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
+    let copiedToClipboard = false;
+
     try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(inviteLink);
+        copiedToClipboard = true;
+        setCopied(true);
+        toast.success("Invite link copied.");
+        window.setTimeout(() => setCopied(false), 1800);
+      }
+
       if (navigator.share) {
         await navigator.share({
           title: "Join my CrewPay workspace",
+          text: "Join my CrewPay workspace",
           url: inviteLink,
         });
         return;
       }
 
-      await navigator.clipboard.writeText(inviteLink);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      if (!copiedToClipboard) {
+        throw new Error("Clipboard unavailable");
+      }
     } catch {
-      // Ignore cancelled share sheets and clipboard failures.
+      if (!copiedToClipboard) {
+        toast.error("Unable to copy invite link.");
+      }
     }
   }
 
