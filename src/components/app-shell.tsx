@@ -156,11 +156,10 @@ export function AppShell({
       </aside>
 
       <div className="relative min-w-0">
-        <div className="mobile-safe-top mb-2 px-1 lg:hidden">
+        <div className="mobile-safe-top sticky top-0 z-30 mb-2 bg-white/94 px-1 backdrop-blur-xl lg:hidden">
           <div
             className={cn(
-              "flex items-center justify-between gap-3 px-2 py-1",
-              roleView === "worker" ? "bg-transparent" : "rounded-[24px] border border-white/70 bg-white/86 shadow-[0_16px_40px_rgba(20,33,61,0.08)] backdrop-blur-xl",
+              "flex items-center justify-between gap-3 rounded-[24px] border border-white/70 bg-white/92 px-2 py-1 shadow-[0_16px_40px_rgba(20,33,61,0.08)] backdrop-blur-xl",
             )}
           >
             <div className="flex min-w-0 items-center gap-3">
@@ -199,30 +198,30 @@ export function AppShell({
 
         <div className="px-1 lg:px-0">
           <div className="rounded-[28px] p-0 sm:p-2 lg:glass-card lg:rounded-[32px] lg:border lg:border-white/70 lg:p-6 lg:shadow-[0_24px_64px_rgba(20,33,61,0.12)]">
-          <header className="hidden flex-col gap-4 rounded-[28px] bg-white/90 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between lg:flex">
-            <div>
-              {hasEyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{eyebrow}</p> : null}
-              <h1 className={cn("text-3xl font-bold text-slate-950", hasEyebrow ? "mt-2" : "")}>{title}</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/notifications"
-                prefetch
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
-                aria-label="Notifications"
-              >
-                <Bell className="h-4 w-4" />
-                {liveUnreadCount > 0 ? (
-                  <span className="absolute right-1.5 top-1.5 inline-flex min-w-[1.05rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-semibold text-white">
-                    {liveUnreadCount > 9 ? "9+" : liveUnreadCount}
-                  </span>
-                ) : null}
-              </Link>
-            </div>
-          </header>
+            <header className="sticky top-4 z-20 hidden flex-col gap-4 rounded-[28px] bg-white/94 p-5 shadow-sm backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between lg:flex">
+              <div>
+                {hasEyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{eyebrow}</p> : null}
+                <h1 className={cn("text-3xl font-bold text-slate-950", hasEyebrow ? "mt-2" : "")}>{title}</h1>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/notifications"
+                  prefetch
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-4 w-4" />
+                  {liveUnreadCount > 0 ? (
+                    <span className="absolute right-1.5 top-1.5 inline-flex min-w-[1.05rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-semibold text-white">
+                      {liveUnreadCount > 9 ? "9+" : liveUnreadCount}
+                    </span>
+                  ) : null}
+                </Link>
+              </div>
+            </header>
 
-          <div className="pb-[calc(env(safe-area-inset-bottom)+5.5rem)] lg:mt-5 lg:pb-0">{children}</div>
-        </div>
+            <div className="pb-[calc(env(safe-area-inset-bottom)+5.5rem)] lg:mt-5 lg:pb-0">{children}</div>
+          </div>
         </div>
 
         <div className="mobile-safe-bottom fixed inset-x-0 bottom-0 z-40 px-4 lg:hidden">
