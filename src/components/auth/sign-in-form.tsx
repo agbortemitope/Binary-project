@@ -10,6 +10,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export function SignInForm() {
   const router = useRouter();
@@ -68,9 +69,8 @@ export function SignInForm() {
         <label className="text-sm font-semibold text-slate-700" htmlFor="sign-in-password">
           Password
         </label>
-        <Input
+        <PasswordInput
           id="sign-in-password"
-          type="password"
           placeholder="Enter your password"
           autoComplete="current-password"
           value={password}

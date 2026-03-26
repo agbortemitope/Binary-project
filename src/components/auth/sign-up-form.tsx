@@ -11,6 +11,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Select } from "@/components/ui/select";
 
 export function SignUpForm() {
@@ -143,9 +144,8 @@ export function SignUpForm() {
           <label className="text-sm font-semibold text-slate-700" htmlFor="password">
             Password
           </label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             placeholder="Create a strong password"
             value={form.password}
             onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
