@@ -1,0 +1,16 @@
+import { apiError, apiSuccess } from "@/lib/api";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export async function POST(_: Request, context: { params: Promise<{ taskId: string }> }) {
+  const { taskId } = await context.params;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("cancel_task", {
+    p_task_id: taskId,
+  });
+
+  if (error) {
+    return apiError(error.message, 400);
+  }
+
+  return apiSuccess({ taskId: data });
+}

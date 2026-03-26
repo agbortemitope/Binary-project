@@ -1,0 +1,22 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Mobile app container */
+body {
+  margin: 0;
+  padding: 0;
+  background: #f9fafb;
+  overflow-x: hidden;
+}
+
+/* Safe area bottom for iOS */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Prevent text selection on buttons and interactive elements */
+button {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}

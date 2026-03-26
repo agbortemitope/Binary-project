@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f8fc;
+  --background-strong: #edf3ff;
+  --foreground: #14213d;
+  --muted: #6b7a99;
+  --card: rgba(255, 255, 255, 0.88);
+  --card-strong: #ffffff;
+  --border: rgba(20, 33, 61, 0.08);
+  --primary: #1f64ff;
+  --primary-strong: #1148c7;
+  --accent: #10b981;
+  --accent-soft: #dff9ef;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --shadow: 0 24px 60px rgba(28, 64, 145, 0.14);
+  --radius: 24px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--foreground);
+  font-family: var(--font-body), sans-serif;
+  background: #ffffff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: -0.03em;
+}
+
+::selection {
+  background: rgba(31, 100, 255, 0.18);
+}
+
+.glass-card {
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid {
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+.mobile-safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
+.mobile-safe-top {
+  padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+}

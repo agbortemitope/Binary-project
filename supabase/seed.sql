@@ -1,0 +1,2 @@
+-- Optional starter data for CrewPay V2 after running schema.sql.
+-- Replace placeholder values with real auth.users IDs if you want demo content.
