@@ -20,39 +20,42 @@ export default async function WorkerDashboardPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-[30px] bg-slate-950 px-5 py-6 text-white sm:px-6 sm:py-7">
-        <div className="flex min-h-[12rem] flex-col justify-between gap-6">
+      <div className="rounded-[30px] bg-slate-950 px-5 py-5 text-white sm:px-6 sm:py-6">
+        <div className="flex min-h-[10.75rem] flex-col justify-between gap-5">
           <div>
-            <div className="text-[1.9rem] font-bold tracking-tight sm:text-[2.1rem]">{formatCurrency(pendingValue)}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Earnings</div>
+            <div className="mt-2 text-[1.55rem] font-bold tracking-tight sm:text-[1.8rem]">{formatCurrency(pendingValue)}</div>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button asChild>
+            <Button asChild variant="secondary">
               <Link href="/worker/tasks">Open task board</Link>
             </Button>
-            <Button asChild variant="secondary">
+            <Button asChild>
               <Link href="/worker/teams">Join another team</Link>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="dashboard-grid">
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Assigned tasks</p>
-          <h3 className="mt-2 text-3xl font-bold text-slate-950">{myTasks.length}</h3>
-        </SectionCard>
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Claimable tasks</p>
-          <h3 className="mt-2 text-3xl font-bold text-slate-950">{openClaimTasks.length}</h3>
-        </SectionCard>
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Paid earnings</p>
-          <h3 className="mt-2 text-3xl font-bold text-slate-950">
-            {formatCurrency(
-              myEarnings.filter((earning) => earning.status === "paid").reduce((sum, earning) => sum + Number(earning.amount_minor), 0),
-            )}
-          </h3>
-        </SectionCard>
+      <div className="rounded-[28px] border border-slate-200 bg-white p-2 shadow-[0_14px_34px_rgba(15,23,42,0.04)] md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+        <div className="dashboard-grid gap-2 md:gap-4">
+          <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
+            <p className="text-sm font-semibold text-slate-500">Assigned tasks</p>
+            <h3 className="mt-2 text-3xl font-bold text-slate-950">{myTasks.length}</h3>
+          </div>
+          <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
+            <p className="text-sm font-semibold text-slate-500">Claimable tasks</p>
+            <h3 className="mt-2 text-3xl font-bold text-slate-950">{openClaimTasks.length}</h3>
+          </div>
+          <div className="rounded-[22px] bg-white p-4 md:border md:border-slate-200 md:p-5">
+            <p className="text-sm font-semibold text-slate-500">Paid earnings</p>
+            <h3 className="mt-2 text-3xl font-bold text-slate-950">
+              {formatCurrency(
+                myEarnings.filter((earning) => earning.status === "paid").reduce((sum, earning) => sum + Number(earning.amount_minor), 0),
+              )}
+            </h3>
+          </div>
+        </div>
       </div>
 
       <SectionCard>
