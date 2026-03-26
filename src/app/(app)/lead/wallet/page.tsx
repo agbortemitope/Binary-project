@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { requireLeadProfile } from "@/lib/auth";
+import { reconcilePendingCollections } from "@/lib/collections";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -14,14 +15,25 @@ export default async function LeadWalletPage({
   searchParams: Promise<{ verification?: string }>;
 }) {
   const { profile } = await requireLeadProfile();
-  const snapshot = await getSnapshotForUser(profile.user_id);
+  let snapshot = await getSnapshotForUser(profile.user_id, { includeCollections: true });
   const leadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);
-  const teams = snapshot.teams.filter((team) => leadTeamIds.includes(team.id));
-  const wallets = snapshot.wallets.filter((wallet) => leadTeamIds.includes(wallet.team_id));
+  const pendingCollections = snapshot.collections.filter((collection) => leadTeamIds.includes(collection.team_id) && collection.status === "pending");
+  const { verification } = await searchParams;
+  const shouldReconcilePending = Boolean(verification) || pendingCollections.length > 0;
+
+  if (shouldReconcilePending) {
+    const reconciliation = await reconcilePendingCollections(leadTeamIds);
+    if (reconciliation.changed > 0) {
+      snapshot = await getSnapshotForUser(profile.user_id, { includeCollections: true });
+    }
+  }
+
+  const currentLeadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);
+  const teams = snapshot.teams.filter((team) => currentLeadTeamIds.includes(team.id));
+  const wallets = snapshot.wallets.filter((wallet) => currentLeadTeamIds.includes(wallet.team_id));
   const totalAvailable = wallets.reduce((sum, wallet) => sum + Number(wallet.available_balance_minor), 0);
   const totalReserved = wallets.reduce((sum, wallet) => sum + Number(wallet.reserved_balance_minor), 0);
   const totalPending = wallets.reduce((sum, wallet) => sum + Number(wallet.pending_payout_balance_minor), 0);
-  const { verification } = await searchParams;
   let verificationResult: string | null = null;
 
   if (verification) {

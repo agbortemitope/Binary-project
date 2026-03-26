@@ -33,7 +33,11 @@ export default async function ChatRoomPage({
             detail.messages.map((message) => (
               <div key={message.id} className="rounded-[24px] border border-slate-200 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-slate-900">{message.sender_user_id === profile.user_id ? "You" : message.sender_user_id}</div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    {message.sender_user_id === profile.user_id
+                      ? "You"
+                      : message.sender?.full_name || message.sender?.email || "CrewPay member"}
+                  </div>
                   <div className="text-xs text-slate-500">{formatRelative(message.created_at)}</div>
                 </div>
                 <div className="mt-2 text-sm text-slate-600">{message.content}</div>

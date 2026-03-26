@@ -1,4 +1,5 @@
 import { apiError, apiSuccess } from "@/lib/api";
+import { persistCollectionVerification } from "@/lib/collections";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature } from "@/lib/interswitch";
 
@@ -49,17 +50,27 @@ export async function POST(request: Request) {
 
       if (collection) {
         if (status.includes("SUCCESS")) {
-          await admin.rpc("apply_collection_success", {
-            p_collection_id: collection.id,
-            p_provider_reference: transactionReference,
-            p_provider_payment_id: String(payload["paymentId"] ?? ""),
-            p_payload: payload,
-          });
+          await persistCollectionVerification(
+            collection.id,
+            {
+              ...payload,
+              MerchantReference: transactionReference,
+              PaymentId: String(payload["paymentId"] ?? payload["PaymentId"] ?? ""),
+              ResponseCode: "00",
+            },
+            collection.txn_ref,
+          );
         } else if (status.includes("FAIL")) {
-          await admin.rpc("mark_collection_failed", {
-            p_collection_id: collection.id,
-            p_payload: payload,
-          });
+          await persistCollectionVerification(
+            collection.id,
+            {
+              ...payload,
+              MerchantReference: transactionReference,
+              ResponseCode: String(payload["responseCode"] ?? payload["ResponseCode"] ?? "FAILED"),
+              ResponseDescription: String(payload["message"] ?? payload["responseMessage"] ?? payload["ResponseDescription"] ?? "Failed"),
+            },
+            collection.txn_ref,
+          );
         }
       }
     }

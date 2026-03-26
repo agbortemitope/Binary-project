@@ -43,6 +43,24 @@ function toArray<T>(data: T[] | null, scope: string, error: { message: string } 
   return data ?? [];
 }
 
+async function hydrateMessageSenders(messages: Message[]) {
+  if (messages.length === 0) {
+    return messages;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const senderIds = [...new Set(messages.map((message) => message.sender_user_id))];
+  const { data, error } = await admin.from("profiles").select("*").in("user_id", senderIds);
+  logError("hydrateMessageSenders", error);
+
+  const profilesById = new Map((data ?? []).map((profile) => [profile.user_id, profile as Profile]));
+
+  return messages.map((message) => ({
+    ...message,
+    sender: profilesById.get(message.sender_user_id) ?? null,
+  }));
+}
+
 export async function getProfileByUserId(userId: string) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.from("profiles").select("*").eq("user_id", userId).single();
@@ -217,7 +235,9 @@ export async function getTaskDetailForUser(userId: string, taskId: string) {
       .select("*")
       .eq("room_id", roomResult.data.id)
       .order("created_at", { ascending: true });
-    messages = toArray(messagesResult.data as Message[] | null, "getTaskDetailForUser.messages", messagesResult.error);
+    messages = await hydrateMessageSenders(
+      toArray(messagesResult.data as Message[] | null, "getTaskDetailForUser.messages", messagesResult.error),
+    );
   }
 
   return {
@@ -249,8 +269,12 @@ export async function getChatRoomDetail(userId: string, roomId: string) {
     admin.from("messages").select("*").eq("room_id", roomId).order("created_at", { ascending: true }),
   ]);
 
+  const messages = await hydrateMessageSenders(
+    toArray(messagesResult.data as Message[] | null, "getChatRoomDetail.messages", messagesResult.error),
+  );
+
   return {
     room: (roomResult.data ?? null) as ChatRoom | null,
-    messages: toArray(messagesResult.data as Message[] | null, "getChatRoomDetail.messages", messagesResult.error),
+    messages,
   };
 }

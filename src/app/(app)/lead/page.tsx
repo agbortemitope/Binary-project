@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { requireLeadProfile } from "@/lib/auth";
+import { reconcilePendingCollections } from "@/lib/collections";
 import { getSnapshotForUser } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -10,7 +11,18 @@ import { Badge } from "@/components/ui/badge";
 
 export default async function LeadDashboardPage() {
   const { profile } = await requireLeadProfile();
-  const snapshot = await getSnapshotForUser(profile.user_id);
+  let snapshot = await getSnapshotForUser(profile.user_id, { includeCollections: true });
+
+  const initialLeadMemberships = snapshot.memberships.filter((membership) => membership.role !== "member");
+  const initialLeadTeamIds = initialLeadMemberships.map((membership) => membership.team_id);
+  const pendingCollections = snapshot.collections.filter((collection) => initialLeadTeamIds.includes(collection.team_id) && collection.status === "pending");
+
+  if (pendingCollections.length > 0) {
+    const reconciliation = await reconcilePendingCollections(initialLeadTeamIds);
+    if (reconciliation.changed > 0) {
+      snapshot = await getSnapshotForUser(profile.user_id, { includeCollections: true });
+    }
+  }
 
   const leadMemberships = snapshot.memberships.filter((membership) => membership.role !== "member");
   const leadTeamIds = leadMemberships.map((membership) => membership.team_id);

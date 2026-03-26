@@ -20,18 +20,18 @@ export default async function WorkerDashboardPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-[30px] bg-slate-950 px-5 py-5 text-white sm:px-6 sm:py-6">
-        <div className="flex min-h-[10.75rem] flex-col justify-between gap-5">
+      <div className="rounded-[30px] bg-slate-950 px-5 py-4 text-white sm:px-6 sm:py-5">
+        <div className="flex min-h-[8rem] flex-col justify-between gap-4">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Earnings</div>
             <div className="mt-2 text-[1.55rem] font-bold tracking-tight sm:text-[1.8rem]">{formatCurrency(pendingValue)}</div>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button asChild variant="secondary">
-              <Link href="/worker/tasks">Open task board</Link>
+            <Button asChild>
+              <Link href="/worker/tasks">Open board</Link>
             </Button>
             <Button asChild>
-              <Link href="/worker/teams">Join another team</Link>
+              <Link href="/worker/teams">Join team</Link>
             </Button>
           </div>
         </div>
