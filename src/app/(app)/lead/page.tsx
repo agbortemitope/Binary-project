@@ -74,8 +74,16 @@ export default async function LeadDashboardPage() {
     })),
     ...leadPayouts.map((payout) => ({
       id: `payout-${payout.id}`,
-      title: payout.status === "successful" ? "Payout sent" : "Payout attempt",
-      subtitle: payout.recipient_account_name || "Crew member",
+      title:
+        payout.status === "successful"
+          ? "Payout sent"
+          : payout.status === "failed"
+            ? "Payout failed"
+            : "Payout processing",
+      subtitle:
+        payout.status === "failed" && payout.last_error
+          ? `${payout.recipient_account_name || "Crew member"} · ${payout.last_error}`
+          : payout.recipient_account_name || "Crew member",
       amountMinor: -Number(payout.amount_minor),
       status: payout.status,
       createdAt: payout.updated_at ?? payout.created_at,

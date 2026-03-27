@@ -3,6 +3,8 @@ import { createPayoutTransfer, getPayoutWalletBalance, makeTransactionReference 
 import { env, hasInterswitchPayoutConfig } from "@/lib/env";
 import { getTeamMembersWithPayouts, requireTeamAdminRole } from "@/lib/team-management";
 
+type DirectTeamPayoutStatus = "processing" | "successful" | "failed" | "skipped";
+
 function inferPayoutStatus(payload: Record<string, unknown>) {
   const raw = String(
     payload["status"] ??
@@ -150,6 +152,18 @@ export async function markDirectTeamPayoutSuccess({
       provider_payload: payload,
     })
     .eq("id", payoutId);
+
+  await admin.from("notifications").insert({
+    user_id: payout.worker_user_id,
+    team_id: payout.team_id,
+    type: "payout_success",
+    title: "Payout completed",
+    body: "Your payout has been sent successfully.",
+    metadata: {
+      payout_id: payoutId,
+      source: "team_member_payout",
+    },
+  });
 }
 
 export async function markDirectTeamPayoutFailure({
@@ -214,6 +228,107 @@ export async function markDirectTeamPayoutFailure({
       worker_user_id: payout.worker_user_id,
     },
   });
+
+  await admin.from("notifications").insert({
+    user_id: payout.worker_user_id,
+    team_id: payout.team_id,
+    type: "payout_failed",
+    title: "Payout failed",
+    body: reason,
+    metadata: {
+      payout_id: payoutId,
+      source: "team_member_payout",
+    },
+  });
+}
+
+async function createDirectTeamPayoutFailureRecord({
+  teamId,
+  memberUserId,
+  initiatedByUserId,
+  amountMinor,
+  narration,
+  payoutMethod,
+  memberName,
+  reason,
+  failureStage,
+  providerPayload = {},
+}: {
+  teamId: string;
+  memberUserId: string;
+  initiatedByUserId: string;
+  amountMinor: number;
+  narration: string;
+  payoutMethod: {
+    bank_code: string;
+    bank_name: string;
+    account_number: string;
+    account_name: string;
+  };
+  memberName: string;
+  reason: string;
+  failureStage: string;
+  providerPayload?: Record<string, unknown>;
+}) {
+  const admin = createSupabaseAdminClient();
+  const transactionReference = makeTransactionReference("CRW-PAY");
+  const { data: payoutRecord, error: payoutRecordError } = await admin
+    .from("payouts")
+    .insert({
+      team_id: teamId,
+      worker_user_id: memberUserId,
+      initiated_by_user_id: initiatedByUserId,
+      transaction_reference: transactionReference,
+      amount_minor: amountMinor,
+      status: "failed",
+      recipient_bank_code: payoutMethod.bank_code,
+      recipient_bank_name: payoutMethod.bank_name,
+      recipient_account_number: payoutMethod.account_number,
+      recipient_account_name: payoutMethod.account_name,
+      narration,
+      last_error: reason,
+      provider_payload: {
+        source: "team_member_payout",
+        failure_stage: failureStage,
+        member_name: memberName,
+        ...providerPayload,
+      },
+    })
+    .select("id")
+    .single();
+
+  if (payoutRecordError || !payoutRecord) {
+    throw new Error(payoutRecordError?.message ?? "Unable to record failed payout attempt.");
+  }
+
+  await Promise.allSettled([
+    admin.from("wallet_ledger_entries").insert({
+      team_id: teamId,
+      type: "payout_failure",
+      amount_minor: 0,
+      payout_id: payoutRecord.id,
+      created_by_user_id: initiatedByUserId,
+      metadata: {
+        source: "team_member_payout",
+        worker_user_id: memberUserId,
+        reason,
+        failure_stage: failureStage,
+      },
+    }),
+    admin.from("notifications").insert({
+      user_id: memberUserId,
+      team_id: teamId,
+      type: "payout_failed",
+      title: "Payout failed",
+      body: reason,
+      metadata: {
+        payout_id: payoutRecord.id,
+        source: "team_member_payout",
+      },
+    }),
+  ]);
+
+  return payoutRecord.id;
 }
 
 export async function attemptDirectTeamMemberPayout({
@@ -248,6 +363,8 @@ export async function attemptDirectTeamMemberPayout({
     throw new Error(memberError?.message ?? "Team member not found.");
   }
 
+  const memberName = member.profile?.full_name ?? member.profile?.email ?? memberUserId;
+
   const { data: payoutMethod, error: payoutMethodError } = await admin
     .from("payout_methods")
     .select("*")
@@ -258,16 +375,43 @@ export async function attemptDirectTeamMemberPayout({
     throw new Error("Member payout method is missing.");
   }
 
+  async function failAttempt(reason: string, failureStage: string, providerPayload: Record<string, unknown> = {}) {
+    try {
+      const payoutId = await createDirectTeamPayoutFailureRecord({
+        teamId,
+        memberUserId,
+        initiatedByUserId,
+        amountMinor,
+        narration,
+        payoutMethod,
+        memberName,
+        reason,
+        failureStage,
+        providerPayload,
+      });
+
+      return {
+        started: false,
+        status: "failed" as DirectTeamPayoutStatus,
+        payoutId,
+        reason,
+      };
+    } catch {
+      return {
+        started: false,
+        status: "failed" as DirectTeamPayoutStatus,
+        payoutId: null as string | null,
+        reason,
+      };
+    }
+  }
+
   if (!payoutMethod.is_verified) {
-    throw new Error(payoutMethod.verification_message || "Member payout method is not verified.");
+    return failAttempt(payoutMethod.verification_message || "Member payout method is not verified.", "verification");
   }
 
   if (!hasInterswitchPayoutConfig()) {
-    return {
-      started: false,
-      payoutId: null as string | null,
-      reason: "Interswitch payout configuration is incomplete.",
-    };
+    return failAttempt("Interswitch payout configuration is incomplete.", "config");
   }
 
   const { data: wallet, error: walletError } = await admin
@@ -281,21 +425,16 @@ export async function attemptDirectTeamMemberPayout({
   }
 
   if (Number(wallet.available_balance_minor) < amountMinor) {
-    return {
-      started: false,
-      payoutId: null as string | null,
-      reason: "Team wallet balance is too low for this payout.",
-    };
+    return failAttempt("Team wallet balance is too low for this payout.", "team_wallet");
   }
 
   const amountMajor = amountMinor / 100;
   const walletBalance = await getPayoutWalletBalance();
   if (walletBalance.availableBalanceMajor < amountMajor) {
-    return {
-      started: false,
-      payoutId: null as string | null,
-      reason: `Interswitch wallet balance is too low for this payout. Available: NGN ${walletBalance.availableBalanceMajor.toFixed(2)}.`,
-    };
+    return failAttempt(
+      `Interswitch wallet balance is too low for this payout. Available: NGN ${walletBalance.availableBalanceMajor.toFixed(2)}.`,
+      "provider_wallet",
+    );
   }
 
   const transactionReference = makeTransactionReference("CRW-PAY");
@@ -315,7 +454,7 @@ export async function attemptDirectTeamMemberPayout({
       narration,
       provider_payload: {
         source: "team_member_payout",
-        member_name: member.profile?.full_name ?? member.profile?.email ?? memberUserId,
+        member_name: memberName,
       },
     })
     .select("id")
@@ -396,9 +535,15 @@ export async function attemptDirectTeamMemberPayout({
     }
 
     return {
-      started: true,
+      started: inferredStatus !== "failed",
+      status: inferredStatus as DirectTeamPayoutStatus,
       payoutId: payoutRecord.id,
-      reason: inferredStatus === "processing" ? "Payout is processing." : null,
+      reason:
+        inferredStatus === "successful"
+          ? "Payout completed successfully."
+          : inferredStatus === "processing"
+            ? "Payout is processing."
+            : "Provider returned a failed payout status.",
     };
   } catch (caught) {
     await markDirectTeamPayoutFailure({
@@ -406,7 +551,12 @@ export async function attemptDirectTeamMemberPayout({
       reason: caught instanceof Error ? caught.message : "Unable to create payout.",
       payload: {},
     });
-    throw caught instanceof Error ? caught : new Error("Unable to create payout.");
+    return {
+      started: false,
+      status: "failed" as DirectTeamPayoutStatus,
+      payoutId: payoutRecord.id,
+      reason: caught instanceof Error ? caught.message : "Unable to create payout.",
+    };
   }
 }
 
@@ -425,6 +575,7 @@ export async function attemptBulkTeamPayouts({
     memberUserId: string;
     memberName: string;
     started: boolean;
+    status: DirectTeamPayoutStatus;
     payoutId: string | null;
     reason: string | null;
   }> = [];
@@ -443,6 +594,7 @@ export async function attemptBulkTeamPayouts({
         memberUserId: member.user_id,
         memberName: member.profile?.full_name || member.profile?.email || member.user_id,
         started: result.started,
+        status: result.status,
         payoutId: result.payoutId,
         reason: result.reason,
       });
@@ -451,6 +603,7 @@ export async function attemptBulkTeamPayouts({
         memberUserId: member.user_id,
         memberName: member.profile?.full_name || member.profile?.email || member.user_id,
         started: false,
+        status: "skipped",
         payoutId: null,
         reason: caught instanceof Error ? caught.message : "Unable to pay this member.",
       });
@@ -458,9 +611,9 @@ export async function attemptBulkTeamPayouts({
   }
 
   return {
-    startedCount: results.filter((item) => item.started).length,
-    skippedCount: results.filter((item) => !item.started && item.reason).length,
-    failedCount: results.filter((item) => !item.started && !item.payoutId).length,
+    startedCount: results.filter((item) => item.status === "processing" || item.status === "successful").length,
+    skippedCount: results.filter((item) => item.status === "skipped").length,
+    failedCount: results.filter((item) => item.status === "failed").length,
     results,
   };
 }

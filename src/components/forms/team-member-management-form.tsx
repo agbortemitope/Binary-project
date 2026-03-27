@@ -81,10 +81,27 @@ export function TeamMemberManagementForm({
       }),
     });
 
-    const payload = (await response.json()) as { ok: boolean; error?: string; data?: { reason?: string | null } };
+    const payload = (await response.json()) as {
+      ok: boolean;
+      error?: string;
+      data?: {
+        reason?: string | null;
+        started?: boolean;
+        status?: "processing" | "successful" | "failed" | "skipped";
+      };
+    };
     if (!response.ok || !payload.ok) {
       setError(payload.error ?? "Unable to pay this member.");
       setPaying(false);
+      return;
+    }
+
+    if (payload.data?.status === "failed" || payload.data?.status === "skipped" || payload.data?.started === false) {
+      const message = payload.data?.reason ?? `Unable to pay ${memberName} right now.`;
+      setError(message);
+      toast.error(message);
+      setPaying(false);
+      router.refresh();
       return;
     }
 

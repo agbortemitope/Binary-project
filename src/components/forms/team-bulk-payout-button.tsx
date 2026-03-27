@@ -28,7 +28,16 @@ export function TeamBulkPayoutButton({
         const payload = (await response.json()) as {
           ok: boolean;
           error?: string;
-          data?: { startedCount: number; skippedCount: number; failedCount: number };
+          data?: {
+            startedCount: number;
+            skippedCount: number;
+            failedCount: number;
+            results?: Array<{
+              memberName: string;
+              status: "processing" | "successful" | "failed" | "skipped";
+              reason: string | null;
+            }>;
+          };
         };
 
         if (!response.ok || !payload.ok || !payload.data) {
@@ -37,9 +46,28 @@ export function TeamBulkPayoutButton({
           return;
         }
 
-        toast.success(
-          `Payout run complete. Started ${payload.data.startedCount}, skipped ${payload.data.skippedCount}, failed ${payload.data.failedCount}.`,
+        const failures = (payload.data.results ?? []).filter(
+          (result) => result.status === "failed" || result.status === "skipped",
         );
+        const failureSummary = failures
+          .slice(0, 2)
+          .map((result) => `${result.memberName}: ${result.reason ?? "Unable to pay this member."}`)
+          .join(" ");
+
+        if (payload.data.startedCount === 0) {
+          toast.error(
+            failureSummary || `No payouts were sent. ${payload.data.failedCount || payload.data.skippedCount} member payouts failed.`,
+          );
+        } else if (failures.length > 0) {
+          toast.success(
+            `Payout started for ${payload.data.startedCount} member${payload.data.startedCount === 1 ? "" : "s"}. ${failures.length} could not be paid.${failureSummary ? ` ${failureSummary}` : ""}`,
+          );
+        } else {
+          toast.success(
+            `Payout started for ${payload.data.startedCount} member${payload.data.startedCount === 1 ? "" : "s"}.`,
+          );
+        }
+
         setRunning(false);
         router.refresh();
       }}
