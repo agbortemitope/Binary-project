@@ -18,16 +18,32 @@ export default async function WorkerDashboardPage() {
   const openTasks = snapshot.tasks.filter((task) => task.status === "open");
   const submittedTasks = myTasks.filter((task) => task.status === "submitted");
   const myEarnings = snapshot.earnings.filter((e) => e.worker_user_id === profile.user_id);
+  const myPayouts = snapshot.payouts.filter((payout) => payout.worker_user_id === profile.user_id);
   const pendingEarnings = myEarnings.filter((e) => ["pending", "processing"].includes(e.status));
   const paidEarnings = myEarnings.filter((e) => e.status === "paid");
   const pendingTotal = pendingEarnings.reduce((s, e) => s + Number(e.amount_minor), 0);
   const paidTotal = paidEarnings.reduce((s, e) => s + Number(e.amount_minor), 0);
+  const latestPayout = myPayouts[0] ?? null;
+
+  let payoutHeadline = "Pending payout";
+  let payoutAmount = pendingTotal;
+
+  if (latestPayout?.status === "failed") {
+    payoutHeadline = "Failed payout";
+    payoutAmount = Number(latestPayout.amount_minor);
+  } else if (latestPayout?.status === "successful") {
+    payoutHeadline = "Successful payout";
+    payoutAmount = Number(latestPayout.amount_minor);
+  } else if (latestPayout?.status === "processing" || latestPayout?.status === "pending") {
+    payoutHeadline = "Pending payout";
+    payoutAmount = Number(latestPayout.amount_minor);
+  }
 
   return (
     <div className="space-y-4">
       <div className="rounded-[28px] bg-slate-950 p-5 text-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">Pending payout</p>
-        <p className="mt-2 text-3xl font-bold">{formatCurrency(pendingTotal)}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">{payoutHeadline}</p>
+        <p className="mt-2 text-3xl font-bold">{formatCurrency(payoutAmount)}</p>
         <div className="mt-3 flex items-center gap-3">
           <span className="text-sm text-white/60">
             {formatCurrency(paidTotal)} paid total

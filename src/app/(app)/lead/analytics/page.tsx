@@ -85,11 +85,19 @@ export default async function LeadSettingsPage() {
                       : payout.status === "processing"
                         ? "info"
                         : payout.status === "failed"
-                          ? "danger"
-                          : "neutral"
+                      ? "danger"
+                      : "neutral"
                   }
                 >
-                  {payout.status === "successful" ? "Sent" : payout.status}
+                  {payout.status === "successful"
+                    ? "Successful"
+                    : payout.status === "processing" || payout.status === "pending"
+                      ? "Pending"
+                      : payout.status === "failed"
+                        ? "Failed"
+                        : payout.status === "cancelled"
+                          ? "Cancelled"
+                          : payout.status}
                 </Badge>
               </div>
             ))

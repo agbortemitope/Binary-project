@@ -29,11 +29,25 @@ export default async function WorkerEarningsPage() {
 
   const earnings = snapshot.earnings.filter((e) => e.worker_user_id === profile.user_id);
   const payouts = snapshot.payouts.filter((p) => p.worker_user_id === profile.user_id);
+  const latestPayout = payouts[0] ?? null;
 
   const totalPaid = earnings.filter((e) => e.status === "paid").reduce((s, e) => s + Number(e.amount_minor), 0);
   const totalPending = earnings
     .filter((e) => ["pending", "processing"].includes(e.status))
     .reduce((s, e) => s + Number(e.amount_minor), 0);
+  const summaryLabel =
+    latestPayout?.status === "failed"
+      ? "Failed"
+      : latestPayout?.status === "successful"
+        ? "Successful"
+        : "Pending";
+  const summaryTone =
+    latestPayout?.status === "failed"
+      ? "rose"
+      : latestPayout?.status === "successful"
+        ? "emerald"
+        : "amber";
+  const summaryAmount = latestPayout ? Number(latestPayout.amount_minor) : totalPending;
 
   return (
     <div className="space-y-4">
@@ -42,9 +56,27 @@ export default async function WorkerEarningsPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Paid out</p>
           <p className="mt-2 text-2xl font-bold text-slate-950">{formatCurrency(totalPaid)}</p>
         </div>
-        <div className="rounded-[22px] bg-amber-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">Pending</p>
-          <p className="mt-2 text-2xl font-bold text-slate-950">{formatCurrency(totalPending)}</p>
+        <div
+          className={`rounded-[22px] p-4 ${
+            summaryTone === "rose"
+              ? "bg-rose-50"
+              : summaryTone === "emerald"
+                ? "bg-emerald-50"
+                : "bg-amber-50"
+          }`}
+        >
+          <p
+            className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+              summaryTone === "rose"
+                ? "text-rose-700"
+                : summaryTone === "emerald"
+                  ? "text-emerald-700"
+                  : "text-amber-700"
+            }`}
+          >
+            {summaryLabel}
+          </p>
+          <p className="mt-2 text-2xl font-bold text-slate-950">{formatCurrency(summaryAmount)}</p>
         </div>
       </div>
 

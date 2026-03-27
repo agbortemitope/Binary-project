@@ -85,7 +85,7 @@ export function LeadTeamManagement({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {!member.payoutMethod?.is_verified ? <Badge tone="warning">Payout pending</Badge> : null}
+                  {!member.payoutMethod?.is_verified ? <Badge tone="warning">Payout unavailable</Badge> : null}
                   <Badge tone={member.role === "member" ? "neutral" : "warning"}>{member.role}</Badge>
                 </div>
               </Link>

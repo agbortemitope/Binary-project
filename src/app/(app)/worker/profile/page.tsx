@@ -19,7 +19,7 @@ export default async function WorkerProfilePage() {
             <p className="mt-0.5 text-sm text-slate-500">{profile.email}</p>
           </div>
           <Badge tone={profile.payout_ready ? "success" : "warning"}>
-            {profile.payout_ready ? "Payout ready" : "Payout pending"}
+            {profile.payout_ready ? "Payout ready" : "Payout unavailable"}
           </Badge>
         </div>
       </SectionCard>

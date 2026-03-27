@@ -74,8 +74,8 @@ export const TOPBAR_LINKS = [
 
 export const PAYOUT_STATUS_LABELS: Record<string, string> = {
   pending: "Pending",
-  processing: "Processing",
-  successful: "Sent",
+  processing: "Pending",
+  successful: "Successful",
   failed: "Failed",
   cancelled: "Cancelled",
 };

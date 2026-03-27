@@ -20,8 +20,8 @@ const taskLabels: Record<string, string> = {
 
 const payoutLabels: Record<string, string> = {
   pending: "Queued",
-  processing: "Sending",
-  successful: "Sent",
+  processing: "Pending",
+  successful: "Successful",
   failed: "Failed",
   cancelled: "Cancelled",
 };
@@ -47,6 +47,23 @@ export default async function LeadTeamMemberDetailPage({
   }
 
   const memberName = detail.member.profile?.full_name || detail.member.profile?.email || detail.member.user_id;
+  const latestPayout = detail.payouts[0] ?? null;
+  const payoutBadgeTone = latestPayout
+    ? latestPayout.status === "successful"
+      ? "success"
+      : latestPayout.status === "failed"
+        ? "danger"
+        : latestPayout.status === "processing"
+          ? "info"
+          : "neutral"
+    : detail.member.payoutMethod?.is_verified
+      ? "success"
+      : "warning";
+  const payoutBadgeLabel = latestPayout
+    ? payoutLabels[latestPayout.status] ?? latestPayout.status
+    : detail.member.payoutMethod?.is_verified
+      ? "Payout ready"
+      : "Payout unavailable";
 
   return (
     <div className="space-y-5">
@@ -63,9 +80,7 @@ export default async function LeadTeamMemberDetailPage({
           </div>
           <div className="flex items-center gap-2">
             <Badge tone={detail.member.role === "member" ? "neutral" : "warning"}>{detail.member.role}</Badge>
-            <Badge tone={detail.member.payoutMethod?.is_verified ? "success" : "warning"}>
-              {detail.member.payoutMethod?.is_verified ? "Payout ready" : "Payout pending"}
-            </Badge>
+            <Badge tone={payoutBadgeTone}>{payoutBadgeLabel}</Badge>
           </div>
         </div>
 
