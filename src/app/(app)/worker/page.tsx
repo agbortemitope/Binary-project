@@ -50,7 +50,7 @@ export default async function WorkerDashboardPage() {
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button asChild size="sm" className="bg-white text-slate-950 hover:bg-white/90">
+          <Button asChild size="sm" variant="secondary" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
             <Link href="/worker/tasks">Find work</Link>
           </Button>
           <Button asChild size="sm" variant="secondary" className="border-white/20 bg-white/10 text-white hover:bg-white/20">

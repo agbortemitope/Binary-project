@@ -56,16 +56,13 @@ export function LeadTeamManagement({
         </div>
 
         <div className="space-y-4 rounded-[24px] border border-slate-200 p-4">
-          <div className="flex items-center justify-between gap-3">
+          <div>
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Assigned payouts</p>
-              <p className="mt-2 text-sm text-slate-600">
-                These are the member amounts that will be used when you run a bulk payout.
-              </p>
-            </div>
-            <div className="rounded-2xl bg-blue-50 px-3 py-2 text-right">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">Total</div>
-              <div className="mt-1 text-sm font-bold text-slate-950">{formatCurrency(totalAssignedPayout)}</div>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">Total</span>
+                <span className="text-lg font-bold text-slate-950">{formatCurrency(totalAssignedPayout)}</span>
+              </div>
             </div>
           </div>
 
