@@ -13,8 +13,17 @@ export default async function CreateTaskPage({
   const { profile } = await requireLeadProfile();
   const { teamId } = await searchParams;
   const snapshot = await getSnapshotForUser(profile.user_id);
-  const leadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);
+  const leadTeamIds = snapshot.memberships
+    .filter((membership) => membership.role !== "member")
+    .map((membership) => membership.team_id);
   const teams = snapshot.teams.filter((team) => leadTeamIds.includes(team.id));
+  const wallets = snapshot.wallets
+    .filter((wallet) => leadTeamIds.includes(wallet.team_id))
+    .map((wallet) => ({
+      teamId: wallet.team_id,
+      availableMinor: Number(wallet.available_balance_minor),
+    }));
+
   const admin = createSupabaseAdminClient();
   const { data: members } = leadTeamIds.length
     ? await admin
@@ -33,7 +42,9 @@ export default async function CreateTaskPage({
     <SectionCard>
       <div>
         <p className="text-lg font-bold text-slate-950">Create a task</p>
-        <p className="text-sm text-slate-600">Funded tasks reserve money immediately. If you set the reward to 0, you can create and test the task flow first.</p>
+        <p className="text-sm text-slate-600">
+          Funded tasks reserve the reward from your team wallet immediately upon creation.
+        </p>
       </div>
       <div className="mt-5">
         {teams.length > 0 ? (
@@ -44,6 +55,7 @@ export default async function CreateTaskPage({
               userId: member.user_id,
               label: `${profileMap.get(member.user_id) ?? member.user_id} (${member.role})`,
             }))}
+            wallets={wallets}
             initialTeamId={teamId}
           />
         ) : (

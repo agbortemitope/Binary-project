@@ -25,6 +25,27 @@ src/
   styles/        # Global CSS and theme
 ```
 
+## UI/UX Design
+
+### Lead flow (funding → payouts)
+The lead dashboard is designed as a pipeline command center:
+1. **Urgency banner** — if tasks are pending approval, a prominent amber alert shows them at the top with direct links
+2. **Wallet pipeline** — 4-stage balance breakdown (Available → Reserved → Releasing → Paid Out) so leads always know where money is
+3. **Sequenced operations** — Fund (Step 1) / Create task (Step 2) / Review & approve (Step 3) are numbered and colour-coded to guide the flow
+4. **Per-team wallet cards** — quick "Fund" buttons inline for each team
+
+### Tasks page
+Tasks are grouped by urgency instead of a flat list:
+- "Needs approval" section first (amber, with direct review links)
+- "In progress" section
+- "Completed" section
+
+### Create task page
+The task creation form shows the selected team's available wallet balance live, with a warning and Fund wallet shortcut if the reward exceeds the balance.
+
+### Wallet page
+After a successful funding, shows a "Create a task now" CTA to keep the user moving through the pipeline. Includes a step-by-step "how it works" explainer.
+
 ## Running on Replit
 
 - Dev server: `npm run dev` — runs on port 5000, bound to 0.0.0.0
