@@ -7,7 +7,16 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency, formatRelative, formatShortDate } from "@/lib/utils";
 import type { ChatRoom, RoleView, Task, Team, TeamMember, TeamWallet } from "@/lib/types";
 
-function getTaskTone(status: Task["status"]) {
+const taskLabels: Record<Task["status"], string> = {
+  open: "Open",
+  assigned: "Assigned",
+  submitted: "In review",
+  approved: "Approved",
+  paid: "Paid",
+  cancelled: "Cancelled",
+};
+
+function getTaskTone(status: Task["status"]): "success" | "warning" | "info" | "danger" | "neutral" {
   if (status === "paid") return "success";
   if (status === "submitted") return "warning";
   if (status === "approved") return "info";
@@ -186,7 +195,7 @@ export function TeamDetailView({
                       Updated {formatRelative(task.updated_at)}
                     </div>
                   </div>
-                  <Badge tone={getTaskTone(task.status)}>{task.status}</Badge>
+                  <Badge tone={getTaskTone(task.status)}>{taskLabels[task.status] ?? task.status}</Badge>
                 </Link>
               ))
             ) : (

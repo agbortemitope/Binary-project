@@ -12,38 +12,43 @@ export default async function WorkerTeamsPage() {
   const snapshot = await getSnapshotForUser(profile.user_id);
 
   return (
-    <div className="space-y-5">
-      <SectionCard>
-        <div>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-lg font-bold text-slate-950">Joined teams</p>
-            <WorkerTeamJoinDialog />
-          </div>
-          <p className="mt-2 text-sm text-slate-600">All active teams tied to your worker account.</p>
-        </div>
-        <div className="mt-4 space-y-4">
-          {snapshot.teams.length > 0 ? (
-            snapshot.teams.map((team) => (
-              <Link key={team.id} href={`/worker/teams/${team.id}`} className="block rounded-[24px] border border-slate-200 p-4 transition hover:bg-slate-50">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-lg font-semibold text-slate-950">{team.name}</div>
-                    <div className="mt-1 text-sm text-slate-500">Invite code: {team.invite_code}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge tone={team.payout_mode === "instant" ? "info" : "success"}>{team.payout_mode}</Badge>
-                    <span className="text-sm font-semibold text-blue-600">Open</span>
-                  </div>
+    <SectionCard>
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-semibold text-slate-950">Your teams</p>
+        <WorkerTeamJoinDialog />
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {snapshot.teams.length > 0 ? (
+          snapshot.teams.map((team) => {
+            const membership = snapshot.memberships.find((m) => m.team_id === team.id);
+            return (
+              <Link
+                key={team.id}
+                href={`/worker/teams/${team.id}`}
+                className="flex items-center justify-between rounded-[20px] border border-slate-200 px-4 py-3 transition hover:bg-slate-50"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-slate-950">{team.name}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Code: {team.invite_code}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge tone={team.payout_mode === "instant" ? "info" : "success"}>{team.payout_mode}</Badge>
+                  {membership && (
+                    <Badge tone={membership.role === "member" ? "neutral" : "warning"}>{membership.role}</Badge>
+                  )}
                 </div>
               </Link>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-sm text-slate-500">
-              You have not joined any teams yet.
-            </div>
-          )}
-        </div>
-      </SectionCard>
-    </div>
+            );
+          })
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+            No teams yet. Use an invite code to join.
+          </div>
+        )}
+      </div>
+    </SectionCard>
   );
 }

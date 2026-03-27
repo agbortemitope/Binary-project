@@ -1,4 +1,4 @@
-import { Bell, BriefcaseBusiness, LayoutDashboard, MessageSquare, Settings, ShieldCheck, Users2 } from "lucide-react";
+import { Bell, BriefcaseBusiness, LayoutDashboard, MessageSquare, Settings, ShieldCheck, Users2, Wallet } from "lucide-react";
 
 export const APP_NAME = "CrewPay";
 export const DEFAULT_CURRENCY = "NGN";
@@ -16,8 +16,9 @@ export const LEAD_NAV = [
 
 export const WORKER_NAV = [
   { href: "/worker", label: "Home", icon: LayoutDashboard },
+  { href: "/worker/tasks", label: "Tasks", icon: BriefcaseBusiness },
+  { href: "/worker/earnings", label: "Earnings", icon: Wallet },
   { href: "/worker/teams", label: "Teams", icon: Users2 },
-  { href: "/worker/chat", label: "Chat", icon: MessageSquare },
   { href: "/worker/profile", label: "Profile", icon: ShieldCheck },
 ] as const;
 
@@ -56,8 +57,8 @@ export const NOTIFICATION_TONES: Record<string, "info" | "success" | "warning" |
 export const APP_ROLES = ["owner", "manager", "member"] as const;
 
 export const PREFERENCE_LABELS = {
-  lead: "Lead view",
-  worker: "Worker view",
+  lead: "Team lead",
+  worker: "Worker",
 };
 
 export const SCHEDULED_PAYOUT_DEFAULTS = {
@@ -70,3 +71,19 @@ export const SCHEDULED_PAYOUT_DEFAULTS = {
 export const TOPBAR_LINKS = [
   { href: "/notifications", label: "Notifications", icon: Bell },
 ] as const;
+
+export const PAYOUT_STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
+  processing: "Processing",
+  successful: "Sent",
+  failed: "Failed",
+  cancelled: "Cancelled",
+};
+
+export const EARNING_STATUS_LABELS: Record<string, string> = {
+  pending: "Awaiting payout",
+  processing: "Processing",
+  paid: "Paid",
+  failed: "Failed",
+  cancelled: "Cancelled",
+};

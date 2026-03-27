@@ -9,6 +9,23 @@ import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+const taskLabels: Record<string, string> = {
+  open: "Open",
+  assigned: "Assigned",
+  submitted: "In review",
+  approved: "Approved",
+  paid: "Paid",
+  cancelled: "Cancelled",
+};
+
+const payoutLabels: Record<string, string> = {
+  pending: "Queued",
+  processing: "Sending",
+  successful: "Sent",
+  failed: "Failed",
+  cancelled: "Cancelled",
+};
+
 export default async function LeadTeamMemberDetailPage({
   params,
 }: {
@@ -145,8 +162,8 @@ export default async function LeadTeamMemberDetailPage({
                     <div className="truncate font-semibold text-slate-950">{task.title}</div>
                     <div className="mt-1 text-sm text-slate-500">{formatCurrency(Number(task.reward_minor))}</div>
                   </div>
-                  <Badge tone={task.status === "submitted" ? "warning" : task.status === "paid" ? "success" : "neutral"}>
-                    {task.status}
+                  <Badge tone={task.status === "submitted" ? "warning" : task.status === "paid" ? "success" : task.status === "approved" ? "info" : task.status === "cancelled" ? "danger" : "neutral"}>
+                    {taskLabels[task.status] ?? task.status}
                   </Badge>
                 </Link>
               ))
@@ -171,8 +188,8 @@ export default async function LeadTeamMemberDetailPage({
                     <div className="font-semibold text-slate-950">{formatCurrency(Number(payout.amount_minor))}</div>
                     <div className="mt-1 text-sm text-slate-500">{formatRelative(payout.created_at)}</div>
                   </div>
-                  <Badge tone={payout.status === "successful" ? "success" : payout.status === "processing" ? "info" : "danger"}>
-                    {payout.status}
+                  <Badge tone={payout.status === "successful" ? "success" : payout.status === "processing" ? "info" : payout.status === "failed" ? "danger" : "neutral"}>
+                    {payoutLabels[payout.status] ?? payout.status}
                   </Badge>
                 </div>
               ))

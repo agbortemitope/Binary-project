@@ -15,36 +15,70 @@ Task-based team operations, wallet funding, and payout orchestration for Nigeria
 ```
 src/
   app/           # Next.js App Router pages and API routes
-    (app)/       # Authenticated app pages (dashboard, chat, tasks, etc.)
+    (app)/       # Authenticated app pages
+      lead/      # Lead-only pages (dashboard, tasks, teams, wallet, chat, analytics)
+      worker/    # Worker-only pages (home, tasks, earnings, teams, profile, chat)
+      chat/      # Shared chat room page (real-time bubble UI)
+      notifications/ # Shared notifications page
     (auth)/      # Auth pages (sign-in, sign-up)
     api/         # Server-side API route handlers
-    crewlead/    # Crew lead specific screens
-    screens/     # Worker screens
   components/    # Shared UI components
+    chat/        # ChatInterface (bubble-style chat client component)
+    forms/       # Action forms (submit task, review, claim, edit profile, etc.)
+    team/        # Team-related components
+    ui/          # Base UI primitives (Button, Badge, Input, etc.)
   lib/           # Utilities, Supabase clients, env config, business logic
   styles/        # Global CSS and theme
 ```
 
+## Role Architecture
+
+**Strict separation**: Worker and lead are completely separate accounts. There is no role switching.
+
+- `default_role_view: "lead"` → lands on `/lead`, sees team/task management, wallet, payout controls
+- `default_role_view: "worker"` → lands on `/worker`, sees claimable tasks, earnings, profile
+
 ## UI/UX Design
 
 ### Lead flow (funding → payouts)
-The lead dashboard is designed as a pipeline command center:
-1. **Urgency banner** — if tasks are pending approval, a prominent amber alert shows them at the top with direct links
-2. **Wallet pipeline** — 4-stage balance breakdown (Available → Reserved → Releasing → Paid Out) so leads always know where money is
-3. **Sequenced operations** — Fund (Step 1) / Create task (Step 2) / Review & approve (Step 3) are numbered and colour-coded to guide the flow
-4. **Per-team wallet cards** — quick "Fund" buttons inline for each team
+- **Dashboard**: Pipeline command center — 4-stage wallet breakdown, urgency banner, numbered step CTAs
+- **Tasks page**: Status-grouped — "Needs approval" (amber) → "In progress" → "Completed"
+- **Task detail**: Submission review with submitter/payout destination + approve/reject
+- **Wallet page**: Funding CTA, per-team balance summary, 4-step explainer
+- **Create task form**: Live wallet balance with insufficient-funds warning
+- **Analytics page**: Correctly labeled "Settings" in nav — shows account info + workspace stats + payout history
 
-### Tasks page
-Tasks are grouped by urgency instead of a flat list:
-- "Needs approval" section first (amber, with direct review links)
-- "In progress" section
-- "Completed" section
+### Worker flow (claim → earn)
+- **Home page**: Pending payout balance hero, stat cards, available tasks, my tasks
+- **Tasks page**: Status-grouped — Claimable (blue) → Active → Completed
+- **Task detail**: Claim/submit work with evidence upload, submission history
+- **Earnings page**: Paid/pending totals, earnings list with status, full payout history with bank details
+- **Profile page**: Edit name/phone live (PATCH /api/profile), payout account view, sign out
 
-### Create task page
-The task creation form shows the selected team's available wallet balance live, with a warning and Fund wallet shortcut if the reward exceeds the balance.
+### Chat
+- **Chat room** (`/chat/[roomId]`): Bubble-style layout — own messages right (blue), others left (grey), initials avatar, keyboard-submit composer (Enter to send)
+- **Chat lists**: Separate team chats and task chats sections
 
-### Wallet page
-After a successful funding, shows a "Create a task now" CTA to keep the user moving through the pipeline. Includes a step-by-step "how it works" explainer.
+### Notifications
+- Unread count shown, blue highlight for unread, relative timestamp
+
+## API Routes
+
+- `PATCH /api/profile` — update worker profile (full_name, phone)
+- `POST /api/auth/sign-up` — account creation with payout method
+- `POST /api/messages` — send chat message
+- `POST /api/tasks/[taskId]/submit` — submit task work
+- `POST /api/tasks/[taskId]/review` — approve/reject submission (triggers payout)
+- `POST /api/tasks/[taskId]/claim` — claim open task
+- `GET /api/notifications/unread-count` — unread badge count for app shell
+
+## Payout Status Labels
+
+Human-readable labels used throughout the UI:
+- `pending` → "Queued"
+- `processing` → "Sending"
+- `successful` → "Sent"
+- `failed` → "Failed"
 
 ## Running on Replit
 

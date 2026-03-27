@@ -1,84 +1,101 @@
 import { requireLeadProfile } from "@/lib/auth";
 import { getSnapshotForUser } from "@/lib/data";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatRelative } from "@/lib/utils";
 
 import { SignOutButton } from "@/components/sign-out-button";
 import { SectionCard } from "@/components/section-card";
+import { Badge } from "@/components/ui/badge";
 
-export default async function LeadAnalyticsPage() {
+export default async function LeadSettingsPage() {
   const { profile } = await requireLeadProfile();
   const snapshot = await getSnapshotForUser(profile.user_id, { includePayouts: true });
-  const leadTeamIds = snapshot.memberships.filter((membership) => membership.role !== "member").map((membership) => membership.team_id);
-  const payouts = snapshot.payouts.filter((item) => leadTeamIds.includes(item.team_id));
-  const tasks = snapshot.tasks.filter((item) => leadTeamIds.includes(item.team_id));
-  const totalPayouts = payouts.reduce((sum, item) => sum + Number(item.amount_minor), 0);
-  const createdTasks = tasks.length;
-  const activeTasks = tasks.filter((task) => ["open", "assigned"].includes(task.status)).length;
-  const tasksInReview = tasks.filter((task) => task.status === "submitted").length;
-  const completedTasks = tasks.filter((task) => ["approved", "paid"].includes(task.status)).length;
-  const latestTasks = tasks.slice(0, 6);
+  const leadTeamIds = snapshot.memberships
+    .filter((m) => m.role !== "member")
+    .map((m) => m.team_id);
+  const payouts = snapshot.payouts.filter((p) => leadTeamIds.includes(p.team_id));
+  const tasks = snapshot.tasks.filter((t) => leadTeamIds.includes(t.team_id));
+
+  const totalPayoutsSuccessful = payouts
+    .filter((p) => p.status === "successful")
+    .reduce((s, p) => s + Number(p.amount_minor), 0);
+  const active = tasks.filter((t) => ["open", "assigned"].includes(t.status)).length;
+  const inReview = tasks.filter((t) => t.status === "submitted").length;
+  const completed = tasks.filter((t) => ["approved", "paid"].includes(t.status)).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <SectionCard>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-lg font-bold text-slate-950">Settings</p>
-            <p className="text-sm text-slate-600">Review your workspace performance here and sign out when you are done.</p>
+            <p className="font-semibold text-slate-950">{profile.full_name}</p>
+            <p className="mt-0.5 text-sm text-slate-500">{profile.email} · Team lead</p>
           </div>
           <SignOutButton variant="secondary" size="md" />
         </div>
       </SectionCard>
 
-      <div className="dashboard-grid">
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Total tasks</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">{createdTasks}</h2>
-          <p className="mt-2 text-sm text-slate-500">Every created task across teams you manage.</p>
-        </SectionCard>
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Open and assigned</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">{activeTasks}</h2>
-          <p className="mt-2 text-sm text-slate-500">Tasks that are live but not yet submitted.</p>
-        </SectionCard>
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Tasks in review</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">{tasksInReview}</h2>
-          <p className="mt-2 text-sm text-slate-500">Submitted tasks waiting for approval.</p>
-        </SectionCard>
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Completed tasks</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">{completedTasks}</h2>
-          <p className="mt-2 text-sm text-slate-500">Approved or already paid tasks.</p>
-        </SectionCard>
-        <SectionCard>
-          <p className="text-sm font-semibold text-slate-500">Total payouts</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">{formatCurrency(totalPayouts)}</h2>
-          <p className="mt-2 text-sm text-slate-500">Successful and in-process transfers together.</p>
-        </SectionCard>
-      </div>
+      <SectionCard>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Workspace stats</p>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-[18px] border border-slate-200 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Total tasks</p>
+            <p className="mt-2 text-2xl font-bold text-slate-950">{tasks.length}</p>
+          </div>
+          <div className="rounded-[18px] border border-slate-200 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Active</p>
+            <p className="mt-2 text-2xl font-bold text-slate-950">{active}</p>
+          </div>
+          <div className="rounded-[18px] border border-amber-100 bg-amber-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">In review</p>
+            <p className="mt-2 text-2xl font-bold text-slate-950">{inReview}</p>
+          </div>
+          <div className="rounded-[18px] border border-emerald-100 bg-emerald-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Completed</p>
+            <p className="mt-2 text-2xl font-bold text-slate-950">{completed}</p>
+          </div>
+        </div>
+        <div className="mt-3 rounded-[18px] border border-blue-100 bg-blue-50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Total paid out</p>
+          <p className="mt-1 text-xl font-bold text-slate-950">{formatCurrency(totalPayoutsSuccessful)}</p>
+        </div>
+      </SectionCard>
 
       <SectionCard>
-        <div>
-          <p className="text-lg font-bold text-slate-950">Recent task activity</p>
-          <p className="text-sm text-slate-600">This updates as soon as tasks are created, submitted, approved, or paid.</p>
-        </div>
-        <div className="mt-4 space-y-3">
-          {latestTasks.length > 0 ? (
-            latestTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between gap-3 rounded-[24px] border border-slate-200 p-4">
+        <p className="font-semibold text-slate-950">Recent payouts</p>
+        <div className="mt-3 space-y-2">
+          {payouts.length > 0 ? (
+            payouts.slice(0, 8).map((payout) => (
+              <div
+                key={payout.id}
+                className="flex items-center justify-between rounded-[20px] border border-slate-200 px-4 py-3"
+              >
                 <div className="min-w-0">
-                  <div className="truncate font-semibold text-slate-950">{task.title}</div>
-                  <div className="mt-1 text-sm text-slate-500">{formatCurrency(Number(task.reward_minor))}</div>
+                  <p className="truncate font-semibold text-slate-950">
+                    {payout.recipient_account_name || "Crew member"}
+                  </p>
+                  <p className="mt-0.5 text-sm text-slate-500">
+                    {formatCurrency(Number(payout.amount_minor))} · {payout.recipient_bank_name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-400">{formatRelative(payout.created_at)}</p>
                 </div>
-                <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-700">
-                  {task.status}
-                </div>
+                <Badge
+                  tone={
+                    payout.status === "successful"
+                      ? "success"
+                      : payout.status === "processing"
+                        ? "info"
+                        : payout.status === "failed"
+                          ? "danger"
+                          : "neutral"
+                  }
+                >
+                  {payout.status === "successful" ? "Sent" : payout.status}
+                </Badge>
               </div>
             ))
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-sm text-slate-500">
-              No task activity yet.
+            <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-center text-sm text-slate-500">
+              No payouts yet.
             </div>
           )}
         </div>

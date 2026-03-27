@@ -1,9 +1,10 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 import { requireProfile } from "@/lib/auth";
 import { getChatRoomDetail } from "@/lib/data";
-import { formatRelative } from "@/lib/utils";
 
-import { MessageComposer } from "@/components/forms/message-composer";
-import { SectionCard } from "@/components/section-card";
+import { ChatInterface } from "@/components/chat/chat-interface";
 
 export default async function ChatRoomPage({
   params,
@@ -14,46 +15,37 @@ export default async function ChatRoomPage({
   const { roomId } = await params;
   const detail = await getChatRoomDetail(profile.user_id, roomId);
 
-  if (!detail || !detail.room) {
-    return <SectionCard>Chat room not found.</SectionCard>;
+  if (!detail?.room) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center text-sm text-slate-500">
+        Chat room not found.
+      </div>
+    );
   }
 
+  const backHref = profile.default_role_view === "lead" ? "/lead/chat" : "/worker/chat";
+
   return (
-    <div className="space-y-5">
-      <SectionCard>
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Chat room</p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-950">{detail.room.name}</h2>
+    <div className="flex h-[calc(100svh-8rem)] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm lg:h-[calc(100vh-6rem)]">
+      <div className="flex shrink-0 items-center gap-3 border-b border-slate-200 px-4 py-3 sm:px-6">
+        <Link
+          href={backHref}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-slate-950">{detail.room.name}</p>
+          <p className="text-xs text-slate-400 capitalize">{detail.room.type} room</p>
         </div>
-      </SectionCard>
+      </div>
 
-      <SectionCard>
-        <div className="space-y-3">
-          {detail.messages.length > 0 ? (
-            detail.messages.map((message) => (
-              <div key={message.id} className="rounded-[24px] border border-slate-200 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-slate-900">
-                    {message.sender_user_id === profile.user_id
-                      ? "You"
-                      : message.sender?.full_name || message.sender?.email || "CrewPay member"}
-                  </div>
-                  <div className="text-xs text-slate-500">{formatRelative(message.created_at)}</div>
-                </div>
-                <div className="mt-2 text-sm text-slate-600">{message.content}</div>
-              </div>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-sm text-slate-500">
-              No messages yet.
-            </div>
-          )}
-        </div>
-      </SectionCard>
-
-      <SectionCard>
-        <MessageComposer roomId={detail.room.id} />
-      </SectionCard>
+      <ChatInterface
+        roomId={detail.room.id}
+        currentUserId={profile.user_id}
+        messages={detail.messages}
+      />
     </div>
   );
 }
