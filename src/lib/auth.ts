@@ -5,12 +5,16 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Profile, RoleView } from "@/lib/types";
 
 export async function getCurrentSession() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  return { supabase, user };
+    return { supabase, user };
+  } catch {
+    return { supabase: null, user: null };
+  }
 }
 
 export async function requireUser() {
