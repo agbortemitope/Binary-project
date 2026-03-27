@@ -2,6 +2,7 @@ import { apiError, apiSuccess } from "@/lib/api";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { attemptPayoutForEarning } from "@/lib/payouts";
+import { getTeamScheduledPayoutAtFromMetadata, setTeamScheduledPayoutAt } from "@/lib/team-management";
 
 function isDueForFrequency(frequency: string, now: Date) {
   const hour = now.getHours();
@@ -19,6 +20,15 @@ function isDueForFrequency(frequency: string, now: Date) {
   return false;
 }
 
+function isDueForScheduledAt(scheduledAt: string, now: Date) {
+  const parsed = new Date(scheduledAt);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+
+  return parsed.getTime() <= now.getTime();
+}
+
 export async function POST(request: Request) {
   const authorization = request.headers.get("authorization");
   if (authorization !== `Bearer ${env.cronSecret}`) {
@@ -34,14 +44,37 @@ export async function POST(request: Request) {
       admin.from("worker_earnings").select("*").in("status", ["pending", "failed"]),
     ]);
 
-    const eligibleTeams = (teams ?? []).filter((team) => isDueForFrequency(String(team.payout_frequency), now));
-    const eligibleTeamIds = eligibleTeams.map((team) => team.id);
+    const ownerIds = [...new Set((teams ?? []).map((team) => team.owner_user_id))];
+    const { data: ownerPayoutMethods } = ownerIds.length
+      ? await admin.from("payout_methods").select("user_id, provider_metadata").in("user_id", ownerIds)
+      : { data: [] as Array<{ user_id: string; provider_metadata: Record<string, unknown> | null }> };
+
+    const ownerPayoutMethodByUserId = new Map(
+      (ownerPayoutMethods ?? []).map((item) => [item.user_id, item.provider_metadata as Record<string, unknown> | null]),
+    );
+
+    const eligibleTeams = (teams ?? [])
+      .map((team) => {
+        const scheduledPayoutAt = getTeamScheduledPayoutAtFromMetadata(ownerPayoutMethodByUserId.get(team.owner_user_id), team.id);
+        const due = scheduledPayoutAt
+          ? isDueForScheduledAt(scheduledPayoutAt, now)
+          : isDueForFrequency(String(team.payout_frequency), now);
+
+        return {
+          team,
+          scheduledPayoutAt,
+          due,
+        };
+      })
+      .filter((item) => item.due);
+
+    const eligibleTeamIds = eligibleTeams.map((item) => item.team.id);
 
     if (eligibleTeamIds.length === 0) {
       return apiSuccess({ processed: 0, message: "No scheduled teams are due right now." });
     }
 
-    const teamMap = new Map(eligibleTeams.map((team) => [team.id, team]));
+    const teamMap = new Map(eligibleTeams.map((item) => [item.team.id, item.team]));
     let processed = 0;
     let skipped = 0;
     const attemptedGroups = new Set<string>();
@@ -79,7 +112,18 @@ export async function POST(request: Request) {
       }
     }
 
-    return apiSuccess({ processed, skipped });
+    const teamsWithCustomSchedule = eligibleTeams.filter((item) => item.scheduledPayoutAt);
+    await Promise.allSettled(
+      teamsWithCustomSchedule.map((item) =>
+        setTeamScheduledPayoutAt({
+          actorUserId: item.team.owner_user_id,
+          teamId: item.team.id,
+          scheduledPayoutAt: null,
+        }),
+      ),
+    );
+
+    return apiSuccess({ processed, skipped, clearedSchedules: teamsWithCustomSchedule.length });
   } catch (caught) {
     return apiError(caught instanceof Error ? caught.message : "Unable to run scheduled payouts.", 500);
   }

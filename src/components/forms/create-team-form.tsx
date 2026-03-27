@@ -13,7 +13,7 @@ export function CreateTeamForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [payoutMode, setPayoutMode] = useState<"instant" | "scheduled">("instant");
-  const [frequency, setFrequency] = useState("weekly");
+  const [scheduledPayoutAt, setScheduledPayoutAt] = useState("");
   const [threshold, setThreshold] = useState("5000");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -32,19 +32,25 @@ export function CreateTeamForm() {
           body: JSON.stringify({
             name,
             payoutMode,
-            payoutFrequency: payoutMode === "scheduled" ? frequency : null,
+            payoutFrequency: null,
+            scheduledPayoutAt:
+              payoutMode === "scheduled" && scheduledPayoutAt ? new Date(scheduledPayoutAt).toISOString() : null,
             thresholdMinor: Number(threshold) * 100,
           }),
         });
 
-        const payload = (await response.json()) as { ok: boolean; error?: string; data?: { teamId: string } };
+        const payload = (await response.json()) as {
+          ok: boolean;
+          error?: string;
+          data?: { teamId: string; warning?: string | null };
+        };
         if (!response.ok || !payload.ok || !payload.data) {
           setError(payload.error ?? "Unable to create team.");
           setSubmitting(false);
           return;
         }
 
-        toast.success("Team created successfully.");
+        toast.success(payload.data.warning ? "Team created. Set the payout date in Team management if needed." : "Team created successfully.");
         router.push(`/lead/teams/${payload.data.teamId}`);
       }}
     >
@@ -69,13 +75,13 @@ export function CreateTeamForm() {
 
       {payoutMode === "scheduled" ? (
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Payout frequency</label>
-          <Select value={frequency} onChange={(event) => setFrequency(event.target.value)}>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Biweekly</option>
-            <option value="monthly">Monthly</option>
-          </Select>
+          <label className="text-sm font-semibold text-slate-700">Payout date & time</label>
+          <Input
+            type="datetime-local"
+            value={scheduledPayoutAt}
+            onChange={(event) => setScheduledPayoutAt(event.target.value)}
+          />
+          <p className="text-xs text-slate-500">Pick the exact date and time you want this team&apos;s next payout to run.</p>
         </div>
       ) : null}
 

@@ -1,7 +1,7 @@
 import { requireLeadProfile } from "@/lib/auth";
 import { getTeamDetailForUser } from "@/lib/data";
 import { createTeamInviteLink } from "@/lib/team-invites";
-import { getTeamMembersWithPayouts } from "@/lib/team-management";
+import { getTeamMembersWithPayouts, getTeamScheduledPayoutAt } from "@/lib/team-management";
 import { env } from "@/lib/env";
 
 import { LeadTeamManagement } from "@/components/team/lead-team-management";
@@ -21,7 +21,10 @@ export default async function LeadTeamDetailPage({
     return <SectionCard>Team not found or inaccessible.</SectionCard>;
   }
 
-  const members = await getTeamMembersWithPayouts(teamId);
+  const [members, scheduledPayoutAt] = await Promise.all([
+    getTeamMembersWithPayouts(teamId),
+    getTeamScheduledPayoutAt(detail.team.owner_user_id, teamId),
+  ]);
 
   return (
     <div className="space-y-5">
@@ -36,7 +39,12 @@ export default async function LeadTeamDetailPage({
         teamRoom={detail.teamRoom}
         inviteLink={createTeamInviteLink(env.appUrl, detail.team.invite_code)}
       />
-      <LeadTeamManagement team={detail.team} members={members} canEditSettings={detail.membership.role === "owner"} />
+      <LeadTeamManagement
+        team={detail.team}
+        members={members}
+        canEditSettings={detail.membership.role === "owner"}
+        scheduledPayoutAt={scheduledPayoutAt}
+      />
     </div>
   );
 }

@@ -11,20 +11,41 @@ import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 
+function toDateTimeLocalValue(value: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export function TeamSettingsForm({
   teamId,
   payoutMode: initialPayoutMode,
   payoutFrequency: initialPayoutFrequency,
+  scheduledPayoutAt: initialScheduledPayoutAt,
   thresholdMinor,
 }: {
   teamId: string;
   payoutMode: PayoutMode;
   payoutFrequency: PayoutFrequency | null;
+  scheduledPayoutAt: string | null;
   thresholdMinor: number;
 }) {
   const router = useRouter();
   const [payoutMode, setPayoutMode] = useState<PayoutMode>(initialPayoutMode);
-  const [frequency, setFrequency] = useState<PayoutFrequency>(initialPayoutFrequency ?? "weekly");
+  const [scheduledPayoutAt, setScheduledPayoutAt] = useState(toDateTimeLocalValue(initialScheduledPayoutAt));
   const [threshold, setThreshold] = useState(String(Math.round(thresholdMinor / 100)));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +65,11 @@ export function TeamSettingsForm({
           },
           body: JSON.stringify({
             payoutMode,
-            payoutFrequency: payoutMode === "scheduled" ? frequency : null,
+            payoutFrequency: payoutMode === "scheduled" ? (initialPayoutFrequency ?? null) : null,
+            scheduledPayoutAt:
+              payoutMode === "scheduled" && scheduledPayoutAt
+                ? new Date(scheduledPayoutAt).toISOString()
+                : null,
             thresholdMinor: Math.max(0, Math.round(Number(threshold || 0) * 100)),
           }),
         });
@@ -77,13 +102,13 @@ export function TeamSettingsForm({
 
       {payoutMode === "scheduled" ? (
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Scheduled payout frequency</label>
-          <Select value={frequency} onChange={(event) => setFrequency(event.target.value as PayoutFrequency)}>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Biweekly</option>
-            <option value="monthly">Monthly</option>
-          </Select>
+          <label className="text-sm font-semibold text-slate-700">Scheduled payout date & time</label>
+          <Input
+            type="datetime-local"
+            value={scheduledPayoutAt}
+            onChange={(event) => setScheduledPayoutAt(event.target.value)}
+          />
+          <p className="text-xs text-slate-500">Pick the exact date and time you want CrewPay to run the next payout.</p>
         </div>
       ) : null}
 

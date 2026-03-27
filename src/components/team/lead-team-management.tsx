@@ -13,10 +13,12 @@ export function LeadTeamManagement({
   team,
   members,
   canEditSettings,
+  scheduledPayoutAt,
 }: {
   team: Team;
   members: TeamMemberWithPayout[];
   canEditSettings: boolean;
+  scheduledPayoutAt: string | null;
 }) {
   const payableMembers = members.filter((member) => member.assignedPayoutMinor > 0);
   const totalAssignedPayout = payableMembers.reduce((sum, member) => sum + member.assignedPayoutMinor, 0);
@@ -46,6 +48,7 @@ export function LeadTeamManagement({
               teamId={team.id}
               payoutMode={team.payout_mode}
               payoutFrequency={team.payout_frequency}
+              scheduledPayoutAt={scheduledPayoutAt}
               thresholdMinor={Number(team.threshold_minor)}
             />
           ) : (

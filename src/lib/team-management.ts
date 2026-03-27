@@ -46,6 +46,27 @@ export function getAssignedPayoutMinorFromMetadata(
   return Math.round(amountMinor);
 }
 
+export function getTeamScheduledPayoutAtFromMetadata(
+  providerMetadata: Record<string, unknown> | null | undefined,
+  teamId: string,
+) {
+  const root = asRecord(providerMetadata);
+  const settings = asRecord(root?.team_schedule_settings);
+  const teamSettings = asRecord(settings?.[teamId]);
+  const scheduledPayoutAt = teamSettings?.scheduled_payout_at;
+
+  if (typeof scheduledPayoutAt !== "string" || scheduledPayoutAt.trim().length === 0) {
+    return null;
+  }
+
+  const parsed = new Date(scheduledPayoutAt);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
 function withAssignedPayoutMetadata(
   providerMetadata: Record<string, unknown> | null | undefined,
   teamId: string,
@@ -65,6 +86,82 @@ function withAssignedPayoutMetadata(
 
   root.team_payout_settings = settings;
   return root;
+}
+
+function withTeamScheduledPayoutMetadata(
+  providerMetadata: Record<string, unknown> | null | undefined,
+  teamId: string,
+  scheduledPayoutAt: string | null,
+) {
+  const root = { ...(asRecord(providerMetadata) ?? {}) };
+  const settings = { ...(asRecord(root.team_schedule_settings) ?? {}) };
+
+  if (scheduledPayoutAt) {
+    settings[teamId] = {
+      ...(asRecord(settings[teamId]) ?? {}),
+      scheduled_payout_at: scheduledPayoutAt,
+    };
+  } else {
+    delete settings[teamId];
+  }
+
+  root.team_schedule_settings = settings;
+  return root;
+}
+
+export async function getTeamScheduledPayoutAt(ownerUserId: string, teamId: string) {
+  const admin = createSupabaseAdminClient();
+  const { data: payoutMethod, error } = await admin
+    .from("payout_methods")
+    .select("provider_metadata")
+    .eq("user_id", ownerUserId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return getTeamScheduledPayoutAtFromMetadata(payoutMethod?.provider_metadata as Record<string, unknown> | null, teamId);
+}
+
+export async function setTeamScheduledPayoutAt(input: {
+  actorUserId: string;
+  teamId: string;
+  scheduledPayoutAt: string | null;
+}) {
+  const admin = createSupabaseAdminClient();
+  const { data: payoutMethod, error: payoutMethodError } = await admin
+    .from("payout_methods")
+    .select("*")
+    .eq("user_id", input.actorUserId)
+    .maybeSingle();
+
+  if (payoutMethodError) {
+    throw new Error(payoutMethodError.message);
+  }
+
+  if (!payoutMethod) {
+    if (input.scheduledPayoutAt) {
+      throw new Error("Add your payout account before setting a scheduled payout date.");
+    }
+
+    return;
+  }
+
+  const { error } = await admin
+    .from("payout_methods")
+    .update({
+      provider_metadata: withTeamScheduledPayoutMetadata(
+        payoutMethod.provider_metadata as Record<string, unknown> | null,
+        input.teamId,
+        input.scheduledPayoutAt,
+      ),
+    })
+    .eq("id", payoutMethod.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export async function requireTeamAdminRole(actorUserId: string, teamId: string) {
@@ -129,6 +226,7 @@ export async function updateTeamSettings(input: {
   teamId: string;
   payoutMode: PayoutMode;
   payoutFrequency: PayoutFrequency | null;
+  scheduledPayoutAt: string | null;
   thresholdMinor: number;
 }) {
   const admin = createSupabaseAdminClient();
@@ -136,6 +234,10 @@ export async function updateTeamSettings(input: {
 
   if (actorRole !== "owner") {
     throw new Error("Only the team owner can update team settings.");
+  }
+
+  if (input.payoutMode === "scheduled" && !input.scheduledPayoutAt) {
+    throw new Error("Pick the scheduled payout date and time.");
   }
 
   const { data: team, error } = await admin
@@ -153,6 +255,12 @@ export async function updateTeamSettings(input: {
   if (error || !team) {
     throw new Error(error?.message ?? "Unable to update team settings.");
   }
+
+  await setTeamScheduledPayoutAt({
+    actorUserId: input.actorUserId,
+    teamId: input.teamId,
+    scheduledPayoutAt: input.payoutMode === "scheduled" ? input.scheduledPayoutAt : null,
+  });
 
   return team as Team;
 }

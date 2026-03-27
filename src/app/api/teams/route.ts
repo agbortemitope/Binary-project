@@ -4,12 +4,14 @@ import { z } from "zod";
 
 import { apiError, apiSuccess } from "@/lib/api";
 import { assertAccountRole } from "@/lib/auth";
+import { setTeamScheduledPayoutAt } from "@/lib/team-management";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const schema = z.object({
   name: z.string().min(2),
   payoutMode: z.enum(["instant", "scheduled"]),
-  payoutFrequency: z.enum(["daily", "weekly", "biweekly", "monthly"]).nullable(),
+  payoutFrequency: z.enum(["daily", "weekly", "biweekly", "monthly"]).nullable().optional(),
+  scheduledPayoutAt: z.string().datetime().nullable().optional(),
   thresholdMinor: z.coerce.number().int().min(0),
 });
 
@@ -43,7 +45,21 @@ export async function POST(request: NextRequest) {
       return apiError(error.message, 400);
     }
 
-    return apiSuccess({ teamId: data }, 201);
+    let warning: string | null = null;
+
+    if (body.payoutMode === "scheduled" && body.scheduledPayoutAt) {
+      try {
+        await setTeamScheduledPayoutAt({
+          actorUserId: user.id,
+          teamId: data as string,
+          scheduledPayoutAt: body.scheduledPayoutAt,
+        });
+      } catch (caught) {
+        warning = caught instanceof Error ? caught.message : "Team created, but the payout date could not be saved yet.";
+      }
+    }
+
+    return apiSuccess({ teamId: data, warning }, 201);
   } catch (caught) {
     if (caught instanceof z.ZodError) {
       return apiError("Please complete the team form.", 400, caught.flatten());

@@ -9,7 +9,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const schema = z.object({
   payoutMode: z.enum(["instant", "scheduled"]),
-  payoutFrequency: z.enum(["daily", "weekly", "biweekly", "monthly"]).nullable(),
+  payoutFrequency: z.enum(["daily", "weekly", "biweekly", "monthly"]).nullable().optional(),
+  scheduledPayoutAt: z.string().datetime().nullable().optional(),
   thresholdMinor: z.coerce.number().int().min(0),
 });
 
@@ -36,7 +37,8 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ t
       actorUserId: user.id,
       teamId,
       payoutMode: body.payoutMode,
-      payoutFrequency: body.payoutMode === "scheduled" ? body.payoutFrequency : null,
+      payoutFrequency: body.payoutMode === "scheduled" ? (body.payoutFrequency ?? null) : null,
+      scheduledPayoutAt: body.payoutMode === "scheduled" ? (body.scheduledPayoutAt ?? null) : null,
       thresholdMinor: body.thresholdMinor,
     });
 
